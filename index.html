@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DayPlan - Planeje suas Tarefas</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <header>
+            <img id="logo" src="./DayPlan logo white.png" alt="DayPlan - Organize Seu Tempo" />
+            <p>Planeje seu tempo de forma eficiente com nossa interface simples e intuitiva</p>
+        </header>
+
+        <div class="container">
+            <section class="benefits">
+                <img src="./mockup.png" alt="Prototipo da tela principal" />
+                <div class="list">
+                    <div class="boxRoundShadow">
+                        <h3>Planejador Minimalista</h3>
+                        <p>Simples e direto, focado nas funções que você precisa para se manter organizado.</p>
+                    </div>
+                    <div class="boxRoundShadow">
+                        <h3>Notificações Inteligentes</h3>
+                        <p>Receba alertas que ajudam você a gerenciar seu tempo de forma eficiente.</p>
+                    </div>
+                    <div class="boxRoundShadow">
+                        <h3>Sincronização Segura</h3>
+                        <p>Tenha seus dados seguros e disponíveis em todos os seus dispositivos.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="cta" id="cta">
+            <h2>Receba as novidades e seja um dos primeiros a utilizar o DayPlan!</h2>
+            <!-- <iframe
+                src="https://docs.google.com/forms/d/e/1FAIpQLScg9-3Ed2C__hR-N0DARaclf9HAImeB05jKP0niqbUsf016og/viewform?embedded=true"
+                frameborder="0"
+                marginheight="0"
+                marginwidth="0"
+                >Carregando…</iframe
+            > -->
+            <div class="boxRoundShadow" id="containerNome">
+                <p>Nome:</p>
+                <input id="inputNome" type="text" />
+            </div>
+            <div class="boxRoundShadow" id="containerEmail">
+                <p>E-mail:</p>
+                <input id="inputEmail" type="text" />
+            </div>
+            <input class="boxRoundShadow" id="submitBtn" type="button" value="Enviar" />
+        </section>
+
+        <footer>
+            <p>© 2024 DayPlan. Todos os direitos reservados.</p>
+        </footer>
+        <script src="./main.js"></script>
+    </body>
+</html>

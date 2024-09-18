@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400&family=Lato:wght@300&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Lato', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    color: #585858;
+}
+
+header {
+    background-color: #0097b2;
+    color: #ffffff;
+    text-align: center;
+    padding: 0 0 2rem 0;
+}
+
+header p {
+    font-family: 'Lato', Arial, sans-serif;
+    font-weight: 300;
+    color: #ffffff;
+    padding: 0 1rem;
+    margin: 0;
+}
+
+header #logo {
+    max-width: 90%;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.benefits {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin: 40px 0;
+    padding: 0 1rem;
+}
+
+.benefits .list {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.benefits img {
+    flex: 0;
+    max-height: 85vh;
+    object-fit: contain;
+}
+
+.boxRoundShadow {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 20px;
+    padding: 20px;
+    width: 280px;
+    max-width: 90vw;
+    text-align: left;
+}
+
+.benefit h3 {
+    font-family: 'Fredoka', Helvetica, sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 10px;
+    color: #585858;
+}
+
+.benefit p {
+    font-family: 'Lato', Arial, sans-serif;
+    font-weight: 300;
+    color: #585858;
+}
+
+.cta {
+    background-color: #0097b2;
+    padding: 50px 20px;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.cta h2 {
+    color: white;
+    font-family: 'Fredoka', Helvetica, sans-serif;
+    font-size: 2rem;
+    font-weight: 400;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-align: center;
+}
+
+.cta .inputContainer {
+    color: #fff;
+    background-color: #e3e3e3;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.cta p {
+    margin: 0;
+}
+
+.cta input[type='text'] {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 2px solid #e3e3e3;
+    font-size: 1rem;
+    outline: none;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.cta input[type='button'] {
+    padding: 1rem;
+    text-align: center;
+    background-color: #0097b2;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.cta .missing {
+    outline: red solid 4px;
+}
+/* iframe {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90vw;
+    width: 600px;
+    height: 750px;
+    margin: 0 auto;
+} */
+
+footer {
+    background-color: #000000;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+footer p {
+    font-family: 'Lato', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: #ffffff;
+}
+
+@media screen and (max-width: 768px) {
+    .benefit {
+        width: 90%;
+    }
+}
