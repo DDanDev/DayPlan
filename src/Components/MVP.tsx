@@ -3,8 +3,8 @@ import {Authenticator, Button, Text, TextField, Heading, Flex, View, Grid, Divid
 import {Amplify} from 'aws-amplify'
 import '@aws-amplify/ui-react/styles.css'
 import {generateClient} from 'aws-amplify/data'
-import outputs from '../../amplify_outputs.json'
 import type {DayTaskSchema} from '../../amplify/data/resource'
+import outputs from '../../amplify_outputs.json'
 
 Amplify.configure(outputs)
 const client = generateClient<DayTaskSchema>({
@@ -37,18 +37,23 @@ const MVPContainer = styled.div`
 
 export const MVP = () => {
     const [dayTasks, setDayTasks] = useState<DayTask[]>([])
+    const [currentList, setCurrentList] = useState<DayTaskSchema['Lists']['type']>('TODAY')
 
     useEffect(() => {
-        const sub = client.models.DayTask.observeQuery().subscribe({
+        const sub = client.models.DayTask.observeQuery({filter: {list: {eq: currentList}}}).subscribe({
             next: ({items}) => {
                 setDayTasks([...items])
             },
+            error: (error) => {
+                console.error('subscribe error', error)
+                alert(error)
+            }
         })
 
         return () => {
             sub.unsubscribe()
         }
-    }, [])
+    }, [currentList])
 
     // const fetchDayTasks = async () => {
     //     // replace for subscription
@@ -133,8 +138,7 @@ export const MVP = () => {
                                     border='1px solid #ccc'
                                     padding='2rem'
                                     borderRadius='5%'
-                                    className='box'
-                                >
+                                    className='box'>
                                     <View>
                                         <Heading level={3}>{dayTask.title}</Heading>
                                     </View>
@@ -144,13 +148,32 @@ export const MVP = () => {
                                         variation='destructive'
                                         onClick={() => {
                                             void deleteNote(dayTask)
-                                        }}
-                                    >
+                                        }}>
                                         Deletar
                                     </Button>
                                 </Flex>
                             ))}
                         </Grid>
+                        <Flex>
+                            <Button
+                                onClick={() => {
+                                    setCurrentList('TODAY')
+                                }}>
+                                Hoje
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setCurrentList('BACKLOG')
+                                }}>
+                                Lista
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setCurrentList('DONE')
+                                }}>
+                                Antigas
+                            </Button>
+                        </Flex>
                         <Button onClick={signOut}>Sair da conta</Button>
                     </Flex>
                 )}
