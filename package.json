@@ -1,43 +1,44 @@
 {
-  "name": "dayplan",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "start": "npm run sandbox && npm run dev",
-    "sandbox": "npx ampx sandbox --profile DayPlanAdmin",
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@aws-amplify/ui-react": "^6.9.5",
-    "aws-amplify": "^6.14.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "styled-components": "^6.1.16"
-  },
-  "devDependencies": {
-    "@aws-amplify/backend": "^1.14.3",
-    "@aws-amplify/backend-cli": "^1.5.0",
-    "@eslint/js": "^9.21.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react-swc": "^3.8.0",
-    "aws-cdk": "^2.1003.0",
-    "aws-cdk-lib": "^2.180.0",
-    "constructs": "^10.4.2",
-    "esbuild": "^0.25.1",
-    "eslint": "^9.21.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
-    "prettier": "^3.5.3",
-    "sass": "^1.85.1",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.24.1",
-    "vite": "^6.2.0"
-  }
+    "name": "dayplan",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "start": "npm run sandbox && npm run dev",
+        "sandbox": "npx ampx sandbox --profile DayPlanAdmin",
+        "sandbox:stop": "npx ampx sandbox delete --profile DayPlanAdmin",
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "lint": "eslint .",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@aws-amplify/ui-react": "^6.9.5",
+        "aws-amplify": "^6.14.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "styled-components": "^6.1.16"
+    },
+    "devDependencies": {
+        "@aws-amplify/backend": "^1.14.3",
+        "@aws-amplify/backend-cli": "^1.5.0",
+        "@eslint/js": "^9.21.0",
+        "@types/react": "^19.0.10",
+        "@types/react-dom": "^19.0.4",
+        "@vitejs/plugin-react-swc": "^3.8.0",
+        "aws-cdk": "^2.1003.0",
+        "aws-cdk-lib": "^2.180.0",
+        "constructs": "^10.4.2",
+        "esbuild": "^0.25.1",
+        "eslint": "^9.21.0",
+        "eslint-plugin-react-hooks": "^5.1.0",
+        "eslint-plugin-react-refresh": "^0.4.19",
+        "globals": "^15.15.0",
+        "prettier": "^3.5.3",
+        "sass": "^1.85.1",
+        "tsx": "^4.19.3",
+        "typescript": "^5.8.2",
+        "typescript-eslint": "^8.24.1",
+        "vite": "^6.2.0"
+    }
 }
