@@ -4,7 +4,7 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "start": "npm run sandbox && npm run dev",
+        "start": "concurrently \"npm run sandbox\" \"npm run dev\"",
         "sandbox": "npx ampx sandbox --profile DayPlanAdmin",
         "sandbox:stop": "npx ampx sandbox delete --profile DayPlanAdmin",
         "dev": "vite",
@@ -28,6 +28,7 @@
         "@vitejs/plugin-react-swc": "^3.8.0",
         "aws-cdk": "^2.1003.0",
         "aws-cdk-lib": "^2.180.0",
+        "concurrently": "^9.1.2",
         "constructs": "^10.4.2",
         "esbuild": "^0.25.1",
         "eslint": "^9.21.0",
