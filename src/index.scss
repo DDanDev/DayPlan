@@ -1,13 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400&family=Lato:wght@300&display=swap');
 
-:root {
+* {
+    box-sizing: border-box;
     font-family: 'Lato', Arial, sans-serif;
+}
+
+:root {
     line-height: 1.5;
     font-weight: 400;
 
-    color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
+    // color-scheme: light dark; TODO
+    // color: rgba(255, 255, 255, 0.87);
+    // background-color: #242424;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -29,15 +33,13 @@ body {
     display: flex;
     place-items: center;
     min-width: 320px;
+    width: 100%;
     min-height: 100vh;
 }
 
-@media (prefers-color-scheme: light) {
-    :root {
-        color: #213547;
-        background-color: #ffffff;
-    }
-    a:hover {
-        color: #747bff;
-    }
+// @media (prefers-color-scheme: light) { TODO
+:root {
+    color: rgb(33, 53, 71);
+    background-color: #ffffff;
 }
+// } TODO
