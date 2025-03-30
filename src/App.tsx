@@ -1,6 +1,7 @@
 import {MVP} from './Components/MVP'
 import dayPlanLogo from '/DayPlan logo.png'
 import styled from 'styled-components'
+import {Text} from '@aws-amplify/ui-react'
 
 const AppContainer = styled.div`
     max-width: 1280px;
@@ -18,6 +19,7 @@ export const App = () => {
     return (
         <AppContainer>
             <Logo src={dayPlanLogo} alt='DayPlan - Organize seu tempo' />
+            <Text>DayPlan versão alpha 0 em desenvolvimento</Text>
             <MVP />
         </AppContainer>
     )
