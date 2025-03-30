@@ -94,9 +94,9 @@ export const MVP = () => {
             <Authenticator>
                 {({signOut}) => (
                     <Flex className='App' justifyContent='center' alignItems='center' direction='column' width='70%' margin='0 auto'>
-                        <Heading level={1}>My Notes App</Heading>
+                        <Heading level={1}>Adicionar</Heading>
                         <View as='form' margin='3rem 0' onSubmit={createNote}>
-                            <Flex direction='column' justifyContent='center' gap='2rem' padding='2rem'>
+                            <Flex direction='column' justifyContent='center' gap='2rem' padding='2rem' style={{background: '#347'}}>
                                 {(
                                     [
                                         ['title', 'Título'],
@@ -110,7 +110,7 @@ export const MVP = () => {
                                         placeholder={input[1]}
                                         label={input[1]}
                                         labelHidden
-                                        variation='quiet'
+                                        // variation='quiet'
                                         required
                                     />
                                 ))}
