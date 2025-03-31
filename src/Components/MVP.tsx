@@ -178,8 +178,8 @@ export const MVP = () => {
         void client.models.DayTask.update({id: dayTask.id, ...changeset})
     }
 
-    const deleteTask = async ({id, title}: DayTask) => {
-        if (confirm(`Tem certeza que deseja deletar ${title}?`)) {
+    const deleteTask = async ({id, title}: DayTask, skipConfirm?: boolean) => {
+        if (skipConfirm || confirm(`Tem certeza que deseja deletar ${title}?`)) {
             await client.models.DayTask.delete({id})
             setSelectedTask(undefined)
         }
@@ -570,6 +570,24 @@ export const MVP = () => {
                                     fontWeight={900}
                                 >
                                     +
+                                </Button>
+                            )}
+                            {!showAdd && currentList === 'DONE' && (
+                                <Button
+                                    onClick={() => {
+                                        if (confirm('Tem certeza que deseja deletar todas as tarefas na lixeira?')) {
+                                            dayTasks.forEach((t) => {
+                                                if (t.list === 'DONE') {
+                                                    void deleteTask(t, true)
+                                                }
+                                            })
+                                        }
+                                    }}
+                                    backgroundColor={'#e33'}
+                                    color={'#f1f1f1'}
+                                    fontWeight={900}
+                                >
+                                    Esvaziar Lixeira
                                 </Button>
                             )}
                             <Flex>
