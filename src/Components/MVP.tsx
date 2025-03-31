@@ -853,6 +853,7 @@ export const MVP = () => {
                                                     handleDragOver(dayTask.id)
                                                 }}
                                                 onDragEnd={handleDragEnd}
+                                                style={{cursor: 'grab'}}
                                             >
                                                 <Flex
                                                     key={dayTask.id}
@@ -867,7 +868,6 @@ export const MVP = () => {
                                                     backgroundColor={
                                                         dayTask.priority ? categoryColors[dayTask.category]?.baseColor : undefined
                                                     }
-                                                    style={{cursor: 'grab'}}
                                                     width={'100vw'}
                                                     // onMouseOver={(e) => {
                                                     //     // e.currentTarget.style.outline = 'solid 3px #99f' // TODO think of something better to highlight each item is selectable
@@ -962,6 +962,7 @@ export const MVP = () => {
                                 </Flex>
                             )}
                             <Flex direction={'column'} flex={1} justifyContent={'end'}>
+                                {/* TODO: smaller buttons, across the width, fixed on the screen, etc */}
                                 {!showAdd && currentList !== 'DONE' && (
                                     <Button
                                         onClick={() => {
