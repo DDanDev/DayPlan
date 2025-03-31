@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import {Authenticator, Button, Text, TextField, Heading, Flex, View} from '@aws-amplify/ui-react'
+import {Authenticator, Button, Text, TextField, Heading, Flex, View, Label, Input} from '@aws-amplify/ui-react'
 import {Amplify} from 'aws-amplify'
 import '@aws-amplify/ui-react/styles.css'
 import {generateClient} from 'aws-amplify/data'
@@ -16,7 +16,7 @@ type List = DayTaskSchema['Lists']['type']
 const ListTitles: Record<List, string> = {
     TODAY: 'Fazer Hoje',
     BACKLOG: 'Organizar',
-    DONE: 'Deletar',
+    DONE: 'Lixeira',
 }
 
 import styled from 'styled-components'
@@ -39,6 +39,28 @@ const MVPContainer = styled.div`
     }
     .box:nth-child(3n + 3) {
         grid-column: 3;
+    }
+`
+
+const WhiteTextField = styled(TextField)`
+    &,
+    & *,
+    &:active,
+    & *:active {
+        box-shadow: none !important;
+        color: #fff !important;
+        border-color: #ddd !important; // TODO look into disabling/editing these from amplify instead of !important props
+    }
+`
+
+const WhiteInput = styled(Input)`
+    &,
+    & *,
+    &:active,
+    & *:active {
+        box-shadow: none !important;
+        color: #fff !important;
+        border-color: #ddd !important; // TODO look into disabling/editing these from amplify instead of !important props
     }
 `
 
@@ -98,21 +120,28 @@ export const MVP = () => {
 
         void (async () => {
             const form = new FormData(event.target as HTMLFormElement)
+            let time: string | undefined = form.get('time') as string
+            time = time ? `${time}:00.000` : undefined
 
-            const {data: _newTask} = await client.models.DayTask.create({
+            const {data: _newTask, errors} = await client.models.DayTask.create({
                 title: form.get('title') as string,
-                description: form.get('description') as string,
                 category: form.get('category') as string,
+                description: (form.get('description') as string) || undefined,
                 list: currentList,
-                time: undefined, // TODO
+                time,
                 priority: false, // TODO
-                recurrence: {once: true}, // TODO
                 moveToTodayOn: undefined, // TODO
                 enablePriorityOn: undefined, // TODO
-                lastCompleted: undefined, // TODO
+                recurrence: {once: true}, // TODO
+
+                // don't set these
+                lastCompleted: undefined,
+                id: undefined,
+                owner: undefined,
             })
 
-            console.log(_newTask)
+            console.log('CREATED', _newTask)
+            console.error('creation', errors)
 
             // void fetchDayTasks() // replace for subscription
             ;(event.target as HTMLFormElement).reset()
@@ -190,6 +219,7 @@ export const MVP = () => {
                                         gap='1rem'
                                         padding='2rem'
                                         style={{background: '#347'}}
+                                        color={'#fff'}
                                         position={'relative'}
                                     >
                                         <Button
@@ -208,21 +238,59 @@ export const MVP = () => {
                                         {(
                                             [
                                                 ['title', 'Título'],
-                                                ['description', 'Descrição'],
                                                 ['category', 'Categoria'],
+                                                ['description', 'Descrição'],
                                             ] satisfies [string, string][]
                                         ).map((input) => (
-                                            <TextField
-                                                key={`input${input[0]}`}
-                                                name={input[0]}
-                                                placeholder={input[1]}
-                                                label={input[1]}
-                                                labelHidden
-                                                // variation='quiet'
-                                                required
-                                            />
+                                            <View position={'relative'}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={input[0]}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    {input[1]}
+                                                </Label>
+                                                <WhiteTextField
+                                                    id={input[0]}
+                                                    key={`input${input[0]}`}
+                                                    name={input[0]}
+                                                    placeholder={input[1]}
+                                                    label={input[1]}
+                                                    required={input[0] !== 'description'}
+                                                    labelHidden
+                                                />
+                                            </View>
                                         ))}
-                                        {/* <View name='image' as='input' type='file' alignSelf={'end'} accept='image/png, image/jpeg' /> */}
+                                        <View position={'relative'}>
+                                            <Label
+                                                position={'absolute'}
+                                                top={'-0.6rem'}
+                                                left={'0.25rem'}
+                                                color={'#ddd'}
+                                                backgroundColor={'#347'}
+                                                style={{zIndex: 1}}
+                                                padding={'0 0.25rem'}
+                                                htmlFor={'time'}
+                                                fontSize={'0.75rem'}
+                                            >
+                                                {'Hora (opcional)'}
+                                            </Label>
+                                            <WhiteInput
+                                                type={'time'}
+                                                id={'time'}
+                                                name={'time'}
+                                                color={'#fff'}
+                                                onChange={(e) => {
+                                                    console.log(e.currentTarget.value, typeof e.currentTarget.value)
+                                                }}
+                                            />
+                                        </View>
                                         <Button type='submit' variation='primary'>
                                             Criar
                                         </Button>
@@ -262,7 +330,7 @@ export const MVP = () => {
                                                     textAlign={'left'}
                                                 >
                                                     <Text fontWeight={600}>{dayTask.title}</Text>
-                                                    {dayTask.time && <Text>{dayTask.time}</Text>}
+                                                    {dayTask.time && <Text>{dayTask.time.replace(':00.000', '')}</Text>}
                                                 </Flex>
                                                 <Text
                                                     backgroundColor={categoryColors[dayTask.category]?.offsetColor}
@@ -383,21 +451,26 @@ export const MVP = () => {
                                 </Button>
                             )}
                             <Flex>
-                                {client.enums.Lists.values().map((list) => (
-                                    <Button
-                                        key={list + 'selector'}
-                                        onClick={() => {
-                                            setCurrentList(list)
-                                            setSelectedTask(undefined)
-                                        }}
-                                        color={currentList === list ? '#fff' : '#000'}
-                                        backgroundColor={currentList === list ? '#347' : '#eee'}
-                                        disabled={currentList === list}
-                                        fontWeight={300}
-                                    >
-                                        {ListTitles[list]}
-                                    </Button>
-                                ))}
+                                {client.enums.Lists.values().map((list) => {
+                                    const selected = currentList === list
+                                    const disabled = selected || showAdd
+                                    return (
+                                        <Button
+                                            key={list + 'selector'}
+                                            onClick={() => {
+                                                setCurrentList(list)
+                                                setSelectedTask(undefined)
+                                            }}
+                                            color={selected ? '#fff' : '#000'}
+                                            backgroundColor={selected ? '#347' : '#eee'}
+                                            disabled={disabled}
+                                            fontWeight={300}
+                                            style={{cursor: disabled ? 'default' : 'pointer'}}
+                                        >
+                                            {ListTitles[list]}
+                                        </Button>
+                                    )
+                                })}
                             </Flex>
                             <Button
                                 onClick={() => {
