@@ -22,25 +22,7 @@ const ListTitles: Record<List, string> = {
 import styled, {css} from 'styled-components'
 import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
 
-const MVPContainer = styled.div`
-    .card {
-        padding: 2em;
-    }
-
-    .read-the-docs {
-        color: #888;
-    }
-
-    .box:nth-child(3n + 1) {
-        grid-column: 1;
-    }
-    .box:nth-child(3n + 2) {
-        grid-column: 2;
-    }
-    .box:nth-child(3n + 3) {
-        grid-column: 3;
-    }
-`
+const MVPContainer = styled.div``
 
 const inputResets = css`
     &,
@@ -149,8 +131,9 @@ export const MVP = () => {
                 }),
             ).values(),
         )
+
         const colors = generateColors({nOfColors: Math.max(categories.length, 4)})
-        setCategoryColors(Object.fromEntries(categories.map((c, i) => [c, colors[i]])))
+        setCategoryColors(Object.fromEntries(categories.sort().map((c, i) => [c, colors[i]])))
     }, [dayTasks])
 
     const createTask: React.FormEventHandler<HTMLFormElement> = (event) => {
@@ -662,6 +645,52 @@ export const MVP = () => {
                                                     id={'enablePriorityOn'}
                                                     name={'enablePriorityOn'}
                                                     defaultValue={selectedTask.enablePriorityOn?.replace(/:\d{2}.\d{3}Z$/, '') ?? undefined}
+                                                />
+                                            </View>
+                                        </Flex>
+                                        <Flex wrap={'wrap'}>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'createdAt'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Criada em
+                                                </Label>
+                                                <WhiteInput
+                                                    type={'datetime-local'}
+                                                    id={'createdAt'}
+                                                    readOnly
+                                                    // disabled
+                                                    value={selectedTask.createdAt.replace(/:\d{2}.\d{3}Z$/, '')}
+                                                />
+                                            </View>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'updatedAt'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Atualizada em
+                                                </Label>
+                                                <WhiteInput
+                                                    type={'datetime-local'}
+                                                    id={'updatedAt'}
+                                                    readOnly
+                                                    // disabled
+                                                    value={selectedTask.updatedAt.replace(/:\d{2}.\d{3}Z$/, '')}
                                                 />
                                             </View>
                                         </Flex>
