@@ -115,11 +115,25 @@ export const MVP = () => {
         twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20)
         const ISOTwentyDaysAgo = twentyDaysAgo.toISOString()
 
+        const ISONow = new Date().toISOString()
+
         const categories: string[] = Array.from(
             new Set(
                 dayTasks.map((t) => {
                     if (t.list === 'DONE' && t.recurrence.once !== false && t.lastCompleted && t.lastCompleted < ISOTwentyDaysAgo) {
                         void deleteTask(t)
+                    } else {
+                        let list: List | undefined = undefined
+                        let priority: boolean | undefined = undefined
+                        if (t.list === 'BACKLOG' && t.moveToTodayOn && t.moveToTodayOn < ISONow) {
+                            list = 'TODAY'
+                        }
+                        if (!t.priority && t.enablePriorityOn && t.enablePriorityOn < ISONow) {
+                            priority = true
+                        }
+                        if (!!list || priority) {
+                            updateTask(t, {list, priority})
+                        }
                     }
 
                     return t.category
