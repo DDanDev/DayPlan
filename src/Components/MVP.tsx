@@ -152,14 +152,6 @@ export const MVP = () => {
             let time: string | undefined = form.get('time') as string
             time = time ? `${time}:00.000` : undefined
 
-            console.log(
-                'formin',
-                typeof form.get('moveToTodayOn'),
-                form.get('moveToTodayOn'),
-                typeof form.get('enablePriorityOn'),
-                form.get('enablePriorityOn'),
-            )
-
             const {data: _newTask, errors} = await client.models.DayTask.create({
                 title: form.get('title') as string,
                 category: form.get('category') as string,
