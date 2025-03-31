@@ -86,7 +86,16 @@ export const MVP = () => {
 
     useEffect(() => {
         setSelectedCategoryColor(undefined)
+        setSelectedTask(undefined)
     }, [showAdd])
+    useEffect(() => {
+        if (selectedTask) {
+            setShowAdd(false)
+            setSelectedCategoryColor(categoryColors[selectedTask.category])
+        } else {
+            setSelectedCategoryColor(undefined)
+        }
+    }, [selectedTask, categoryColors])
 
     useEffect(() => {
         if (!isAuthenticated) return
@@ -149,24 +158,24 @@ export const MVP = () => {
 
         void (async () => {
             const form = new FormData(event.target as HTMLFormElement)
-            let time: string | undefined = form.get('time') as string
-            time = time ? `${time}:00.000` : undefined
+            let time: string | null = form.get('time') as string
+            time = time ? `${time}:00.000` : null
 
             const {data: _newTask, errors} = await client.models.DayTask.create({
                 title: form.get('title') as string,
                 category: form.get('category') as string,
-                description: (form.get('description') as string) || undefined,
+                description: (form.get('description') as string) || null,
                 list: currentList,
                 time,
                 priority: form.has('priority'),
-                moveToTodayOn: new Date(form.get('moveToTodayOn') as string).toISOString(),
-                enablePriorityOn: new Date(form.get('enablePriorityOn') as string).toISOString(),
+                moveToTodayOn: form.get('moveToTodayOn') ? new Date(form.get('moveToTodayOn') as string).toISOString() : null,
+                enablePriorityOn: form.get('enablePriorityOn') ? new Date(form.get('enablePriorityOn') as string).toISOString() : null,
                 recurrence: {once: true}, // TODO
 
                 // don't set these
                 lastCompleted: undefined,
                 id: undefined,
-                owner: undefined,
+                // owner: undefined,
             })
 
             console.log('CREATED', _newTask)
@@ -174,9 +183,42 @@ export const MVP = () => {
                 console.error('creation', errors)
             }
 
-            // void fetchDayTasks() // replace for subscription
             ;(event.target as HTMLFormElement).reset()
             setShowAdd(false)
+        })()
+    }
+
+    const handleFormUpdate: React.FormEventHandler<HTMLFormElement> = (event) => {
+        event.preventDefault()
+
+        void (async () => {
+            const form = new FormData(event.target as HTMLFormElement)
+            let time: string | null = form.get('time') as string
+            time = time ? `${time}:00.000` : null
+
+            const {data: _newTask, errors} = await client.models.DayTask.update({
+                title: form.get('title') as string,
+                category: form.get('category') as string,
+                description: (form.get('description') as string) || null,
+                time,
+                priority: form.has('priority'),
+                moveToTodayOn: form.get('moveToTodayOn') ? new Date(form.get('moveToTodayOn') as string).toISOString() : null,
+                enablePriorityOn: form.get('enablePriorityOn') ? new Date(form.get('enablePriorityOn') as string).toISOString() : null,
+                recurrence: {once: true}, // TODO
+
+                // don't set these
+                list: undefined, // change it only from the lists view
+                lastCompleted: undefined,
+                id: form.get('id') as string,
+                // owner: undefined,
+            })
+
+            console.log('UPDATED', _newTask)
+            if (errors) {
+                console.error('updating', errors)
+            }
+            ;(event.target as HTMLFormElement).reset()
+            setSelectedTask(undefined)
         })()
     }
 
@@ -251,7 +293,7 @@ export const MVP = () => {
                             {showAdd ? (
                                 <View as='form' onSubmit={createTask}>
                                     {/* TODO: Quebrar em componentes para código mais limpo e mais facil manutenção.  */}
-                                    {/* AddTask Component */}
+                                    {/* Task Component, param setting it to creation mode */}
                                     <Heading level={2}>Adicionar</Heading>
                                     <Flex
                                         direction='column'
@@ -430,10 +472,225 @@ export const MVP = () => {
                                         </Button>
                                     </Flex>
                                 </View>
-                            ) : !selectedTask ? (
+                            ) : selectedTask ? (
+                                <View as='form' onSubmit={handleFormUpdate}>
+                                    <Heading level={2}>Detalhes</Heading>
+                                    <Input style={{display: 'none'}} name={'id'} value={selectedTask.id} readOnly />
+                                    <Flex
+                                        direction='column'
+                                        justifyContent='center'
+                                        gap='1rem'
+                                        padding='2rem'
+                                        style={{background: '#347'}}
+                                        color={'#fff'}
+                                        position={'relative'}
+                                        width={'90vw'}
+                                    >
+                                        <Button
+                                            variation='menu'
+                                            alignSelf={'end'}
+                                            onClick={() => {
+                                                setSelectedTask(undefined)
+                                            }}
+                                            color={'#ccc'}
+                                            position={'absolute'}
+                                            top={0}
+                                            right={0}
+                                        >
+                                            X
+                                        </Button>
+                                        <View position={'relative'}>
+                                            {/* FloatingLabelInput */}
+                                            <Label
+                                                position={'absolute'}
+                                                top={'-0.6rem'}
+                                                left={'0.25rem'}
+                                                color={'#ddd'}
+                                                backgroundColor={'#347'}
+                                                style={{zIndex: 1}}
+                                                padding={'0 0.25rem'}
+                                                htmlFor={'title'}
+                                                fontSize={'0.8rem'}
+                                                fontWeight={900}
+                                            >
+                                                Título *
+                                            </Label>
+                                            <WhiteTextField
+                                                id={'title'}
+                                                name={'title'}
+                                                placeholder={'Título'}
+                                                label={'Título'}
+                                                required
+                                                labelHidden
+                                                defaultValue={selectedTask.title}
+                                            />
+                                        </View>
+                                        <View position={'relative'}>
+                                            <Label
+                                                position={'absolute'}
+                                                top={'-0.6rem'}
+                                                left={'0.25rem'}
+                                                color={'#ddd'}
+                                                backgroundColor={'#347'}
+                                                style={{zIndex: 1}}
+                                                padding={'0 0.25rem'}
+                                                htmlFor={'category'}
+                                                fontSize={'0.8rem'}
+                                                fontWeight={900}
+                                            >
+                                                Categoria *
+                                            </Label>
+                                            <WhiteAutocomplete
+                                                options={(() =>
+                                                    Object.entries(categoryColors).map(([category, color]) => ({
+                                                        id: category,
+                                                        label: category,
+                                                        color: 'black',
+                                                        backgroundColor: color?.offsetColor ?? '#fff',
+                                                        fontWeight: '900',
+                                                    })))()}
+                                                id={'category'}
+                                                name={'category'}
+                                                placeholder={'Categoria'}
+                                                label={'Categoria'}
+                                                labelHidden
+                                                required
+                                                color={'#fff'}
+                                                defaultValue={selectedTask.category}
+                                                onChange={(e) => {
+                                                    setSelectedCategoryColor(categoryColors[e.currentTarget.value] ?? undefined)
+                                                }}
+                                                onSelect={(e) => {
+                                                    setSelectedCategoryColor(categoryColors[e.id] ?? undefined)
+                                                }}
+                                            />
+                                        </View>
+                                        <View position={'relative'}>
+                                            {/* FloatingLabelInput */}
+                                            <Label
+                                                position={'absolute'}
+                                                top={'-0.6rem'}
+                                                left={'0.25rem'}
+                                                color={'#ddd'}
+                                                backgroundColor={'#347'}
+                                                style={{zIndex: 1}}
+                                                padding={'0 0.25rem'}
+                                                htmlFor={'description'}
+                                                fontSize={'0.75rem'}
+                                            >
+                                                Descrição (opcional)
+                                            </Label>
+                                            <WhiteTextField
+                                                id={'description'}
+                                                name={'description'}
+                                                placeholder={'Descrição'}
+                                                label={'Descrição'}
+                                                labelHidden
+                                                defaultValue={selectedTask.description ?? undefined}
+                                            />
+                                        </View>
+                                        <Flex wrap={'wrap'}>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'time'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Hora (opcional)
+                                                </Label>
+                                                <WhiteInput
+                                                    type={'time'}
+                                                    id={'time'}
+                                                    name={'time'}
+                                                    defaultValue={selectedTask.time?.replace(':00.000', '') ?? undefined}
+                                                />
+                                            </View>
+                                            <SwitchField
+                                                name={'priority'}
+                                                label={'Prioridade'}
+                                                flex={1}
+                                                thumbColor={selectedCategoryColor?.offsetColor ?? '#111'}
+                                                trackCheckedColor={selectedCategoryColor?.baseColor ?? '#777'}
+                                                trackColor={'#eee'}
+                                                defaultChecked={selectedTask.priority}
+                                            />
+                                        </Flex>
+                                        <Flex wrap={'wrap'}>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'moveToTodayOn'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Mover para lista de hoje em: (opcional)
+                                                </Label>
+                                                <WhiteInput
+                                                    type={'datetime-local'}
+                                                    id={'moveToTodayOn'}
+                                                    name={'moveToTodayOn'}
+                                                    defaultValue={selectedTask.moveToTodayOn?.replace(/:\d{2}.\d{3}Z$/, '') ?? undefined}
+                                                />
+                                            </View>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'enablePriorityOn'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Tornar prioritário em: (opcional)
+                                                </Label>
+                                                <WhiteInput
+                                                    type={'datetime-local'}
+                                                    id={'enablePriorityOn'}
+                                                    name={'enablePriorityOn'}
+                                                    defaultValue={selectedTask.enablePriorityOn?.replace(/:\d{2}.\d{3}Z$/, '') ?? undefined}
+                                                />
+                                            </View>
+                                        </Flex>
+                                        <Flex>
+                                            <Button
+                                                type='submit'
+                                                variation='primary'
+                                                backgroundColor={selectedCategoryColor?.offsetColor}
+                                                flex={1}
+                                            >
+                                                Atualizar
+                                            </Button>
+                                            <Button
+                                                variation='destructive'
+                                                fontWeight={300}
+                                                fontSize={'0.5rem'}
+                                                onClick={() => {
+                                                    void deleteTask(selectedTask)
+                                                }}
+                                            >
+                                                Deletar
+                                            </Button>
+                                        </Flex>
+                                    </Flex>
+                                </View>
+                            ) : (
+                                // </Flex>
                                 <Flex direction={'column'} gap={0}>
-                                    {/* Component: TaskList */}
-                                    <Heading level={4} backgroundColor={'#aaa'}>
+                                    <Heading level={4} backgroundColor={'#aaa'} width={'100vw'}>
                                         {ListTitles[currentList]} - {new Date().toLocaleDateString()}
                                     </Heading>
                                     {dayTasks
@@ -540,38 +797,6 @@ export const MVP = () => {
                                                 </Text>
                                             </Flex>
                                         ))}
-                                </Flex>
-                            ) : (
-                                <Flex direction={'column'} backgroundColor={'#123'} position={'relative'}>
-                                    {/* TaskFS */}
-                                    <Button
-                                        variation='menu'
-                                        alignSelf={'end'}
-                                        onClick={() => {
-                                            setSelectedTask(undefined)
-                                        }}
-                                        color={'#ccc'}
-                                        position={'absolute'}
-                                        top={'0'}
-                                        right={'0'}
-                                    >
-                                        X
-                                    </Button>
-                                    {Object.entries(selectedTask)
-                                        .filter((prop) => !['id', 'owner'].includes(prop[0]))
-                                        .map((prop) => (
-                                            <Text key={prop[0]} color={'#f1f1f1'}>{`${prop[0]}: ${JSON.stringify(prop[1])}`}</Text>
-                                        ))}
-                                    <Button
-                                        variation='destructive'
-                                        fontWeight={300}
-                                        fontSize={'0.5rem'}
-                                        onClick={() => {
-                                            void deleteTask(selectedTask)
-                                        }}
-                                    >
-                                        Deletar
-                                    </Button>
                                 </Flex>
                             )}
                             <Flex direction={'column'} flex={1} justifyContent={'end'}>
