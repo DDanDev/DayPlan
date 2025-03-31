@@ -422,12 +422,24 @@ export const MVP = () => {
                                                     backgroundColor={'#347'}
                                                     style={{zIndex: 1}}
                                                     padding={'0 0.25rem'}
-                                                    htmlFor={'time'}
+                                                    htmlFor={'timeInput'}
                                                     fontSize={'0.75rem'}
                                                 >
                                                     Hora (opcional)
                                                 </Label>
-                                                <WhiteInput type={'time'} id={'time'} name={'time'} />
+                                                <Text
+                                                    position={'absolute'}
+                                                    top={'0.55rem'}
+                                                    left={'0.8rem'}
+                                                    color={'#ddd'}
+                                                    style={{userSelect: 'none', cursor: 'pointer'}}
+                                                    onClick={() => {
+                                                        ;(document.getElementById('timeInput') as HTMLInputElement).value = ''
+                                                    }}
+                                                >
+                                                    x
+                                                </Text>
+                                                <WhiteInput type={'time'} id={'timeInput'} name={'time'} />
                                             </View>
                                             <SwitchField
                                                 name={'priority'}
@@ -448,12 +460,24 @@ export const MVP = () => {
                                                     backgroundColor={'#347'}
                                                     style={{zIndex: 1}}
                                                     padding={'0 0.25rem'}
-                                                    htmlFor={'moveToTodayOn'}
+                                                    htmlFor={'moveToTodayOnInput'}
                                                     fontSize={'0.75rem'}
                                                 >
                                                     Mover para lista de hoje em: (opcional)
                                                 </Label>
-                                                <WhiteInput type={'datetime-local'} id={'moveToTodayOn'} name={'moveToTodayOn'} />
+                                                <Text
+                                                    position={'absolute'}
+                                                    top={'0.55rem'}
+                                                    left={'0.8rem'}
+                                                    color={'#ddd'}
+                                                    style={{userSelect: 'none', cursor: 'pointer'}}
+                                                    onClick={() => {
+                                                        ;(document.getElementById('moveToTodayOnInput') as HTMLInputElement).value = ''
+                                                    }}
+                                                >
+                                                    x
+                                                </Text>
+                                                <WhiteInput type={'datetime-local'} id={'moveToTodayOnInput'} name={'moveToTodayOn'} />
                                             </View>
                                             <View position={'relative'} flex={1}>
                                                 <Label
@@ -464,12 +488,28 @@ export const MVP = () => {
                                                     backgroundColor={'#347'}
                                                     style={{zIndex: 1}}
                                                     padding={'0 0.25rem'}
-                                                    htmlFor={'enablePriorityOn'}
+                                                    htmlFor={'enablePriorityOnInput'}
                                                     fontSize={'0.75rem'}
                                                 >
                                                     Tornar prioritário em: (opcional)
                                                 </Label>
-                                                <WhiteInput type={'datetime-local'} id={'enablePriorityOn'} name={'enablePriorityOn'} />
+                                                <Text
+                                                    position={'absolute'}
+                                                    top={'0.55rem'}
+                                                    left={'0.8rem'}
+                                                    color={'#ddd'}
+                                                    style={{userSelect: 'none', cursor: 'pointer'}}
+                                                    onClick={() => {
+                                                        ;(document.getElementById('enablePriorityOnInput') as HTMLInputElement).value = ''
+                                                    }}
+                                                >
+                                                    x
+                                                </Text>
+                                                <WhiteInput
+                                                    type={'datetime-local'}
+                                                    id={'enablePriorityOnInput'}
+                                                    name={'enablePriorityOn'}
+                                                />
                                             </View>
                                         </Flex>
                                         <Button type='submit' variation='primary' backgroundColor={selectedCategoryColor?.offsetColor}>
@@ -604,14 +644,26 @@ export const MVP = () => {
                                                     backgroundColor={'#347'}
                                                     style={{zIndex: 1}}
                                                     padding={'0 0.25rem'}
-                                                    htmlFor={'time'}
+                                                    htmlFor={'timeUpdateInput'}
                                                     fontSize={'0.75rem'}
                                                 >
                                                     Hora (opcional)
                                                 </Label>
+                                                <Text
+                                                    position={'absolute'}
+                                                    top={'0.55rem'}
+                                                    left={'0.8rem'}
+                                                    color={'#ddd'}
+                                                    style={{userSelect: 'none', cursor: 'pointer'}}
+                                                    onClick={() => {
+                                                        ;(document.getElementById('timeUpdateInput') as HTMLInputElement).value = ''
+                                                    }}
+                                                >
+                                                    x
+                                                </Text>
                                                 <WhiteInput
                                                     type={'time'}
-                                                    id={'time'}
+                                                    id={'timeUpdateInput'}
                                                     name={'time'}
                                                     defaultValue={selectedTask.time?.replace(':00.000', '') ?? undefined}
                                                 />
@@ -636,14 +688,26 @@ export const MVP = () => {
                                                     backgroundColor={'#347'}
                                                     style={{zIndex: 1}}
                                                     padding={'0 0.25rem'}
-                                                    htmlFor={'moveToTodayOn'}
+                                                    htmlFor={'moveToTodayOnEditInput'}
                                                     fontSize={'0.75rem'}
                                                 >
                                                     Mover para lista de hoje em: (opcional)
                                                 </Label>
+                                                <Text
+                                                    position={'absolute'}
+                                                    top={'0.55rem'}
+                                                    left={'0.8rem'}
+                                                    color={'#ddd'}
+                                                    style={{userSelect: 'none', cursor: 'pointer'}}
+                                                    onClick={() => {
+                                                        ;(document.getElementById('moveToTodayOnEditInput') as HTMLInputElement).value = ''
+                                                    }}
+                                                >
+                                                    x
+                                                </Text>
                                                 <WhiteInput
                                                     type={'datetime-local'}
-                                                    id={'moveToTodayOn'}
+                                                    id={'moveToTodayOnEditInput'}
                                                     name={'moveToTodayOn'}
                                                     defaultValue={selectedTask.moveToTodayOn?.replace(/:\d{2}.\d{3}Z$/, '') ?? undefined}
                                                 />
@@ -657,14 +721,27 @@ export const MVP = () => {
                                                     backgroundColor={'#347'}
                                                     style={{zIndex: 1}}
                                                     padding={'0 0.25rem'}
-                                                    htmlFor={'enablePriorityOn'}
+                                                    htmlFor={'enablePriorityOnEditInput'}
                                                     fontSize={'0.75rem'}
                                                 >
                                                     Tornar prioritário em: (opcional)
                                                 </Label>
+                                                <Text
+                                                    position={'absolute'}
+                                                    top={'0.55rem'}
+                                                    left={'0.8rem'}
+                                                    color={'#ddd'}
+                                                    style={{userSelect: 'none', cursor: 'pointer'}}
+                                                    onClick={() => {
+                                                        ;(document.getElementById('enablePriorityOnEditInput') as HTMLInputElement).value =
+                                                            ''
+                                                    }}
+                                                >
+                                                    x
+                                                </Text>
                                                 <WhiteInput
                                                     type={'datetime-local'}
-                                                    id={'enablePriorityOn'}
+                                                    id={'enablePriorityOnEditInput'}
                                                     name={'enablePriorityOn'}
                                                     defaultValue={selectedTask.enablePriorityOn?.replace(/:\d{2}.\d{3}Z$/, '') ?? undefined}
                                                 />
