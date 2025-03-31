@@ -14,9 +14,9 @@ const client = generateClient<DayTaskSchema>({
 type DayTask = DayTaskSchema['DayTask']['type']
 type List = DayTaskSchema['Lists']['type']
 const ListTitles: Record<List, string> = {
-    TODAY: 'Hoje',
-    BACKLOG: 'Lista',
-    DONE: 'Descarte',
+    TODAY: 'Fazer Hoje',
+    BACKLOG: 'Organizar',
+    DONE: 'Deletar',
 }
 
 import styled from 'styled-components'
@@ -74,7 +74,21 @@ export const MVP = () => {
     )
 
     useEffect(() => {
-        const categories = Array.from(new Set(dayTasks.map((t) => t.category)).values())
+        const twentyDaysAgo = new Date()
+        twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20)
+        const ISOTwentyDaysAgo = twentyDaysAgo.toISOString()
+
+        const categories: string[] = Array.from(
+            new Set(
+                dayTasks.map((t) => {
+                    if (t.list === 'DONE' && t.recurrence.once !== false && t.lastCompleted && t.lastCompleted < ISOTwentyDaysAgo) {
+                        deleteTask(t)
+                    }
+
+                    return t.category
+                }),
+            ).values(),
+        )
         const colors = generateColors({nOfColors: Math.max(categories.length, 4)})
         setCategoryColors(Object.fromEntries(categories.map((c, i) => [c, colors[i]])))
     }, [dayTasks])
@@ -142,7 +156,7 @@ export const MVP = () => {
         } else {
             // (isComplete && hasRecurrenceRule)
             list = 'BACKLOG'
-            lastCompleted = undefined
+            lastCompleted = null
         }
 
         updateTask(dayTask, {lastCompleted, list})
@@ -264,7 +278,7 @@ export const MVP = () => {
                                             </Text>
                                             <Text
                                                 backgroundColor={dayTask.list === 'DONE' ? '#c11' : '#aaa'}
-                                                color={dayTask.list === 'DONE' ? '#ddd' : '#555'}
+                                                color={dayTask.list === 'DONE' ? '#ddd' : '#333'}
                                                 border={'solid 1px black'}
                                                 height={'1.5rem'}
                                                 width={'1.5rem'}
