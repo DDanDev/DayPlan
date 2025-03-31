@@ -11,12 +11,13 @@
 
     // color-scheme: light dark; TODO
     // color: rgba(255, 255, 255, 0.87);
-    // background-color: #242424;
+    // background-color: #333;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --amplify-components-field-label-color: #fff !important; // TODO remove important, probably need to import this after amplify's default css
 }
 
 a {
@@ -38,8 +39,8 @@ body {
 }
 
 // @media (prefers-color-scheme: light) { TODO
-:root {
-    color: rgb(33, 53, 71);
-    background-color: #ffffff;
-}
+// :root {
+// color: rgb(33, 53, 71);
+// background-color: #ffffff;
+// }
 // } TODO

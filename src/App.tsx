@@ -1,7 +1,6 @@
 import {MVP} from './Components/MVP'
 import dayPlanLogo from '/DayPlan logo.png'
 import styled from 'styled-components'
-import {Text} from '@aws-amplify/ui-react'
 
 const AppContainer = styled.div`
     max-width: 1280px;

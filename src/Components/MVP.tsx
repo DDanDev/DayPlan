@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import {Authenticator, Button, Text, TextField, Heading, Flex, View, Label, Input} from '@aws-amplify/ui-react'
+import {Authenticator, Button, Text, TextField, Heading, Flex, View, Label, Input, SwitchField, Autocomplete} from '@aws-amplify/ui-react'
 import {Amplify} from 'aws-amplify'
 import '@aws-amplify/ui-react/styles.css'
 import {generateClient} from 'aws-amplify/data'
@@ -19,7 +19,7 @@ const ListTitles: Record<List, string> = {
     DONE: 'Lixeira',
 }
 
-import styled from 'styled-components'
+import styled, {css} from 'styled-components'
 import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
 
 const MVPContainer = styled.div`
@@ -42,7 +42,7 @@ const MVPContainer = styled.div`
     }
 `
 
-const WhiteTextField = styled(TextField)`
+const inputResets = css`
     &,
     & *,
     &:active,
@@ -53,13 +53,21 @@ const WhiteTextField = styled(TextField)`
     }
 `
 
+const WhiteTextField = styled(TextField)`
+    ${inputResets}
+`
+
 const WhiteInput = styled(Input)`
+    ${inputResets}
+`
+
+const WhiteAutocomplete = styled(Autocomplete)`
     &,
     & *,
     &:active,
     & *:active {
         box-shadow: none !important;
-        color: #fff !important;
+        /* color: #fff !important; */
         border-color: #ddd !important; // TODO look into disabling/editing these from amplify instead of !important props
     }
 `
@@ -71,6 +79,7 @@ export const MVP = () => {
     const [selectedTask, setSelectedTask] = useState<DayTask>()
     const [categoryColors, setCategoryColors] = useState<Record<string, ColorDefinition | undefined>>({})
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+    const [selectedCategoryColor, setSelectedCategoryColor] = useState<ColorDefinition | undefined>(undefined)
 
     useEffect(() => {
         if (!isAuthenticated) return
@@ -78,7 +87,6 @@ export const MVP = () => {
             // filter: {list: {eq: currentList}}
         }).subscribe({
             next: ({items}) => {
-                console.log(items)
                 setDayTasks([...items])
             },
             error: (error) => {
@@ -129,7 +137,7 @@ export const MVP = () => {
                 description: (form.get('description') as string) || undefined,
                 list: currentList,
                 time,
-                priority: false, // TODO
+                priority: form.has('priority'),
                 moveToTodayOn: undefined, // TODO
                 enablePriorityOn: undefined, // TODO
                 recurrence: {once: true}, // TODO
@@ -141,7 +149,7 @@ export const MVP = () => {
             })
 
             console.log('CREATED', _newTask)
-            console.error('creation', errors)
+            errors && console.error('creation', errors)
 
             // void fetchDayTasks() // replace for subscription
             ;(event.target as HTMLFormElement).reset()
@@ -205,12 +213,13 @@ export const MVP = () => {
         <MVPContainer>
             <Authenticator>
                 {({signOut, user}) => {
-                    console.log(user)
+                    // console.log(_user)
                     setIsAuthenticated(true)
                     return (
                         <Flex className='App' justifyContent='center' alignItems='center' direction='column' width='70%' margin='0 auto'>
                             {showAdd ? (
                                 <View as='form' onSubmit={createTask}>
+                                    {/* TODO: Quebrar em componentes para código mais limpo e mais facil manutenção.  */}
                                     {/* AddTask Component */}
                                     <Heading level={2}>Adicionar</Heading>
                                     <Flex
@@ -221,6 +230,7 @@ export const MVP = () => {
                                         style={{background: '#347'}}
                                         color={'#fff'}
                                         position={'relative'}
+                                        width={'90vw'}
                                     >
                                         <Button
                                             variation='menu'
@@ -238,12 +248,14 @@ export const MVP = () => {
                                         {(
                                             [
                                                 ['title', 'Título'],
-                                                ['category', 'Categoria'],
-                                                ['description', 'Descrição'],
+                                                // ['category', 'Categoria'],
+                                                ['description', 'Descrição (opcional)'],
                                             ] satisfies [string, string][]
                                         ).map((input) => (
                                             <View position={'relative'}>
+                                                {/* FloatingLabelInput */}
                                                 <Label
+                                                    key={`label${input[0]}`}
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
                                                     left={'0.25rem'}
@@ -276,22 +288,66 @@ export const MVP = () => {
                                                 backgroundColor={'#347'}
                                                 style={{zIndex: 1}}
                                                 padding={'0 0.25rem'}
-                                                htmlFor={'time'}
+                                                htmlFor={'category'}
                                                 fontSize={'0.75rem'}
                                             >
-                                                {'Hora (opcional)'}
+                                                Categoria
                                             </Label>
-                                            <WhiteInput
-                                                type={'time'}
-                                                id={'time'}
-                                                name={'time'}
-                                                color={'#fff'}
+                                            <WhiteAutocomplete
+                                                options={(() => {
+                                                    const ops = Object.entries(categoryColors).map(([category, color]) => ({
+                                                        id: category,
+                                                        label: category,
+                                                        color: 'black',
+                                                        backgroundColor: color?.offsetColor ?? '#fff',
+                                                        fontWeight: '900',
+                                                    }))
+                                                    console.log('ops', ops)
+                                                    return ops
+                                                })()}
+                                                id={'category'}
+                                                name={'category'}
+                                                placeholder={'Categoria'}
+                                                label={'Categoria'}
+                                                labelHidden
+                                                required
                                                 onChange={(e) => {
-                                                    console.log(e.currentTarget.value, typeof e.currentTarget.value)
+                                                    console.log('?', categoryColors[e.currentTarget.value])
+                                                    setSelectedCategoryColor(categoryColors[e.currentTarget.value] ?? undefined)
+                                                }}
+                                                onSelect={(e) => {
+                                                    console.log('?', e.id)
+                                                    setSelectedCategoryColor(categoryColors[e.id] ?? undefined)
                                                 }}
                                             />
                                         </View>
-                                        <Button type='submit' variation='primary'>
+                                        <Flex wrap={'wrap'}>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'time'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    {'Hora (opcional)'}
+                                                </Label>
+                                                <WhiteInput type={'time'} id={'time'} name={'time'} color={'#fff'} />
+                                            </View>
+                                            <SwitchField
+                                                name={'priority'}
+                                                label={'Prioridade'}
+                                                flex={1}
+                                                thumbColor={selectedCategoryColor?.offsetColor ?? '#111'}
+                                                trackCheckedColor={selectedCategoryColor?.baseColor ?? '#777'}
+                                                trackColor={'#eee'}
+                                            />
+                                        </Flex>
+                                        <Button type='submit' variation='primary' backgroundColor={selectedCategoryColor?.offsetColor}>
                                             Criar
                                         </Button>
                                     </Flex>
@@ -299,7 +355,9 @@ export const MVP = () => {
                             ) : !selectedTask ? (
                                 <Flex direction={'column'} gap={0}>
                                     {/* Component: TaskList */}
-                                    <Heading level={2}>{ListTitles[currentList]}</Heading>
+                                    <Heading level={4} backgroundColor={'#aaa'}>
+                                        {ListTitles[currentList]} - {new Date().toLocaleDateString()}
+                                    </Heading>
                                     {dayTasks
                                         .filter((t) => t.list === currentList)
                                         .map((dayTask) => (
