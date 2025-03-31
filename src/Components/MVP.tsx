@@ -239,7 +239,15 @@ export const MVP = () => {
                     // console.log(_user)
                     setIsAuthenticated(true)
                     return (
-                        <Flex className='App' justifyContent='center' alignItems='center' direction='column' width='70%' margin='0 auto'>
+                        <Flex
+                            className='App'
+                            minHeight={'calc(100vh - 18rem)'}
+                            justifyContent='space-between'
+                            alignItems='center'
+                            direction='column'
+                            width='70%'
+                            margin='0 auto'
+                        >
                             {showAdd ? (
                                 <View as='form' onSubmit={createTask}>
                                     {/* TODO: Quebrar em componentes para código mais limpo e mais facil manutenção.  */}
@@ -566,70 +574,72 @@ export const MVP = () => {
                                     </Button>
                                 </Flex>
                             )}
-                            {!showAdd && currentList !== 'DONE' && (
+                            <Flex direction={'column'} flex={1} justifyContent={'end'}>
+                                {!showAdd && currentList !== 'DONE' && (
+                                    <Button
+                                        onClick={() => {
+                                            setShowAdd(true)
+                                        }}
+                                        backgroundColor={'#373'}
+                                        color={'#f1f1f1'}
+                                        fontWeight={900}
+                                    >
+                                        +
+                                    </Button>
+                                )}
+                                {!showAdd && currentList === 'DONE' && (
+                                    <Button
+                                        onClick={() => {
+                                            if (confirm('Tem certeza que deseja deletar todas as tarefas na lixeira?')) {
+                                                dayTasks.forEach((t) => {
+                                                    if (t.list === 'DONE') {
+                                                        void deleteTask(t, true)
+                                                    }
+                                                })
+                                            }
+                                        }}
+                                        backgroundColor={'#e33'}
+                                        color={'#f1f1f1'}
+                                        fontWeight={900}
+                                    >
+                                        Esvaziar Lixeira
+                                    </Button>
+                                )}
+                                <Flex>
+                                    {client.enums.Lists.values().map((list) => {
+                                        const selected = currentList === list
+                                        const disabled = (selected && !selectedTask) || showAdd
+                                        return (
+                                            <Button
+                                                key={list + 'selector'}
+                                                onClick={() => {
+                                                    setCurrentList(list)
+                                                    setSelectedTask(undefined)
+                                                }}
+                                                color={selected ? '#fff' : '#000'}
+                                                backgroundColor={selected ? '#347' : '#eee'}
+                                                disabled={disabled}
+                                                fontWeight={300}
+                                                style={{cursor: disabled ? 'default' : 'pointer'}}
+                                            >
+                                                {ListTitles[list]}
+                                            </Button>
+                                        )
+                                    })}
+                                </Flex>
                                 <Button
                                     onClick={() => {
-                                        setShowAdd(true)
+                                        setIsAuthenticated(false)
+                                        if (signOut) signOut()
                                     }}
-                                    backgroundColor={'#373'}
-                                    color={'#f1f1f1'}
-                                    fontWeight={900}
+                                    backgroundColor={'#333'}
+                                    color={'#aaa'}
+                                    fontWeight={300}
+                                    fontSize={'0.5rem'}
                                 >
-                                    +
+                                    Sair da conta {user?.signInDetails?.loginId}
                                 </Button>
-                            )}
-                            {!showAdd && currentList === 'DONE' && (
-                                <Button
-                                    onClick={() => {
-                                        if (confirm('Tem certeza que deseja deletar todas as tarefas na lixeira?')) {
-                                            dayTasks.forEach((t) => {
-                                                if (t.list === 'DONE') {
-                                                    void deleteTask(t, true)
-                                                }
-                                            })
-                                        }
-                                    }}
-                                    backgroundColor={'#e33'}
-                                    color={'#f1f1f1'}
-                                    fontWeight={900}
-                                >
-                                    Esvaziar Lixeira
-                                </Button>
-                            )}
-                            <Flex>
-                                {client.enums.Lists.values().map((list) => {
-                                    const selected = currentList === list
-                                    const disabled = selected || showAdd
-                                    return (
-                                        <Button
-                                            key={list + 'selector'}
-                                            onClick={() => {
-                                                setCurrentList(list)
-                                                setSelectedTask(undefined)
-                                            }}
-                                            color={selected ? '#fff' : '#000'}
-                                            backgroundColor={selected ? '#347' : '#eee'}
-                                            disabled={disabled}
-                                            fontWeight={300}
-                                            style={{cursor: disabled ? 'default' : 'pointer'}}
-                                        >
-                                            {ListTitles[list]}
-                                        </Button>
-                                    )
-                                })}
                             </Flex>
-                            <Button
-                                onClick={() => {
-                                    setIsAuthenticated(false)
-                                    if (signOut) signOut()
-                                }}
-                                backgroundColor={'#333'}
-                                color={'#aaa'}
-                                fontWeight={300}
-                                fontSize={'0.5rem'}
-                            >
-                                Sair da conta {user?.signInDetails?.loginId}
-                            </Button>
                         </Flex>
                     )
                 }}
