@@ -1027,13 +1027,14 @@ export const MVP = () => {
                                 <Flex>
                                     {client.enums.Lists.values().map((list) => {
                                         const selected = currentList === list
-                                        const disabled = (selected && !selectedTask) || showAdd
+                                        const disabled = selected && !(selectedTask || showAdd)
                                         return (
                                             <Button
                                                 key={list + 'selector'}
                                                 onClick={() => {
                                                     setCurrentList(list)
                                                     setSelectedTask(undefined)
+                                                    setShowAdd(false)
                                                 }}
                                                 color={selected ? '#fff' : '#000'}
                                                 backgroundColor={selected ? '#347' : '#eee'}
