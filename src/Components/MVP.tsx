@@ -67,8 +67,11 @@ const WhiteAutocomplete = styled(Autocomplete)`
     &:active,
     & *:active {
         box-shadow: none !important;
-        /* color: #fff !important; */
         border-color: #ddd !important; // TODO look into disabling/editing these from amplify instead of !important props
+    }
+
+    input {
+        color: #fff;
     }
 `
 
@@ -80,6 +83,10 @@ export const MVP = () => {
     const [categoryColors, setCategoryColors] = useState<Record<string, ColorDefinition | undefined>>({})
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
     const [selectedCategoryColor, setSelectedCategoryColor] = useState<ColorDefinition | undefined>(undefined)
+
+    useEffect(() => {
+        setSelectedCategoryColor(undefined)
+    }, [showAdd])
 
     useEffect(() => {
         if (!isAuthenticated) return
@@ -131,6 +138,14 @@ export const MVP = () => {
             let time: string | undefined = form.get('time') as string
             time = time ? `${time}:00.000` : undefined
 
+            console.log(
+                'formin',
+                typeof form.get('moveToTodayOn'),
+                form.get('moveToTodayOn'),
+                typeof form.get('enablePriorityOn'),
+                form.get('enablePriorityOn'),
+            )
+
             const {data: _newTask, errors} = await client.models.DayTask.create({
                 title: form.get('title') as string,
                 category: form.get('category') as string,
@@ -138,8 +153,8 @@ export const MVP = () => {
                 list: currentList,
                 time,
                 priority: form.has('priority'),
-                moveToTodayOn: undefined, // TODO
-                enablePriorityOn: undefined, // TODO
+                moveToTodayOn: new Date(form.get('moveToTodayOn') as string).toISOString(),
+                enablePriorityOn: new Date(form.get('enablePriorityOn') as string).toISOString(),
                 recurrence: {once: true}, // TODO
 
                 // don't set these
@@ -247,40 +262,31 @@ export const MVP = () => {
                                         >
                                             X
                                         </Button>
-                                        {(
-                                            [
-                                                ['title', 'Título'],
-                                                // ['category', 'Categoria'],
-                                                ['description', 'Descrição (opcional)'],
-                                            ] satisfies [string, string][]
-                                        ).map((input) => (
-                                            <View position={'relative'} key={`container${input[0]}`}>
-                                                {/* FloatingLabelInput */}
-                                                <Label
-                                                    key={`label${input[0]}`}
-                                                    position={'absolute'}
-                                                    top={'-0.6rem'}
-                                                    left={'0.25rem'}
-                                                    color={'#ddd'}
-                                                    backgroundColor={'#347'}
-                                                    style={{zIndex: 1}}
-                                                    padding={'0 0.25rem'}
-                                                    htmlFor={input[0]}
-                                                    fontSize={'0.75rem'}
-                                                >
-                                                    {input[1]}
-                                                </Label>
-                                                <WhiteTextField
-                                                    id={input[0]}
-                                                    key={`input${input[0]}`}
-                                                    name={input[0]}
-                                                    placeholder={input[1]}
-                                                    label={input[1]}
-                                                    required={input[0] !== 'description'}
-                                                    labelHidden
-                                                />
-                                            </View>
-                                        ))}
+                                        <View position={'relative'}>
+                                            {/* FloatingLabelInput */}
+                                            <Label
+                                                position={'absolute'}
+                                                top={'-0.6rem'}
+                                                left={'0.25rem'}
+                                                color={'#ddd'}
+                                                backgroundColor={'#347'}
+                                                style={{zIndex: 1}}
+                                                padding={'0 0.25rem'}
+                                                htmlFor={'title'}
+                                                fontSize={'0.8rem'}
+                                                fontWeight={900}
+                                            >
+                                                Título *
+                                            </Label>
+                                            <WhiteTextField
+                                                id={'title'}
+                                                name={'title'}
+                                                placeholder={'Título'}
+                                                label={'Título'}
+                                                required
+                                                labelHidden
+                                            />
+                                        </View>
                                         <View position={'relative'}>
                                             <Label
                                                 position={'absolute'}
@@ -291,28 +297,27 @@ export const MVP = () => {
                                                 style={{zIndex: 1}}
                                                 padding={'0 0.25rem'}
                                                 htmlFor={'category'}
-                                                fontSize={'0.75rem'}
+                                                fontSize={'0.8rem'}
+                                                fontWeight={900}
                                             >
-                                                Categoria
+                                                Categoria *
                                             </Label>
                                             <WhiteAutocomplete
-                                                options={(() => {
-                                                    const ops = Object.entries(categoryColors).map(([category, color]) => ({
+                                                options={(() =>
+                                                    Object.entries(categoryColors).map(([category, color]) => ({
                                                         id: category,
                                                         label: category,
                                                         color: 'black',
                                                         backgroundColor: color?.offsetColor ?? '#fff',
                                                         fontWeight: '900',
-                                                    }))
-                                                    console.log('ops', ops)
-                                                    return ops
-                                                })()}
+                                                    })))()}
                                                 id={'category'}
                                                 name={'category'}
                                                 placeholder={'Categoria'}
                                                 label={'Categoria'}
                                                 labelHidden
                                                 required
+                                                color={'#fff'}
                                                 onChange={(e) => {
                                                     console.log('?', categoryColors[e.currentTarget.value])
                                                     setSelectedCategoryColor(categoryColors[e.currentTarget.value] ?? undefined)
@@ -321,6 +326,29 @@ export const MVP = () => {
                                                     console.log('?', e.id)
                                                     setSelectedCategoryColor(categoryColors[e.id] ?? undefined)
                                                 }}
+                                            />
+                                        </View>
+                                        <View position={'relative'}>
+                                            {/* FloatingLabelInput */}
+                                            <Label
+                                                position={'absolute'}
+                                                top={'-0.6rem'}
+                                                left={'0.25rem'}
+                                                color={'#ddd'}
+                                                backgroundColor={'#347'}
+                                                style={{zIndex: 1}}
+                                                padding={'0 0.25rem'}
+                                                htmlFor={'description'}
+                                                fontSize={'0.75rem'}
+                                            >
+                                                Descrição (opcional)
+                                            </Label>
+                                            <WhiteTextField
+                                                id={'description'}
+                                                name={'description'}
+                                                placeholder={'Descrição'}
+                                                label={'Descrição'}
+                                                labelHidden
                                             />
                                         </View>
                                         <Flex wrap={'wrap'}>
@@ -336,9 +364,9 @@ export const MVP = () => {
                                                     htmlFor={'time'}
                                                     fontSize={'0.75rem'}
                                                 >
-                                                    {'Hora (opcional)'}
+                                                    Hora (opcional)
                                                 </Label>
-                                                <WhiteInput type={'time'} id={'time'} name={'time'} color={'#fff'} />
+                                                <WhiteInput type={'time'} id={'time'} name={'time'} />
                                             </View>
                                             <SwitchField
                                                 name={'priority'}
@@ -348,6 +376,40 @@ export const MVP = () => {
                                                 trackCheckedColor={selectedCategoryColor?.baseColor ?? '#777'}
                                                 trackColor={'#eee'}
                                             />
+                                        </Flex>
+                                        <Flex wrap={'wrap'}>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'moveToTodayOn'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Mover para lista de hoje em: (opcional)
+                                                </Label>
+                                                <WhiteInput type={'datetime-local'} id={'moveToTodayOn'} name={'moveToTodayOn'} />
+                                            </View>
+                                            <View position={'relative'} flex={1}>
+                                                <Label
+                                                    position={'absolute'}
+                                                    top={'-0.6rem'}
+                                                    left={'0.25rem'}
+                                                    color={'#ddd'}
+                                                    backgroundColor={'#347'}
+                                                    style={{zIndex: 1}}
+                                                    padding={'0 0.25rem'}
+                                                    htmlFor={'enablePriorityOn'}
+                                                    fontSize={'0.75rem'}
+                                                >
+                                                    Tornar prioritário em: (opcional)
+                                                </Label>
+                                                <WhiteInput type={'datetime-local'} id={'enablePriorityOn'} name={'enablePriorityOn'} />
+                                            </View>
                                         </Flex>
                                         <Button type='submit' variation='primary' backgroundColor={selectedCategoryColor?.offsetColor}>
                                             Criar
