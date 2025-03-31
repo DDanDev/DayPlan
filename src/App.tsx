@@ -21,7 +21,6 @@ export const App = () => {
             <a href={'/'}>
                 <Logo src={dayPlanLogo} alt='DayPlan - Organize seu tempo' />
             </a>
-            <Text>DayPlan versão alpha 0 em desenvolvimento</Text>
             <MVP />
         </AppContainer>
     )
