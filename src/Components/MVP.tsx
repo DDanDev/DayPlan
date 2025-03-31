@@ -5,6 +5,12 @@ import '@aws-amplify/ui-react/styles.css'
 import {generateClient} from 'aws-amplify/data'
 import type {DayTaskSchema} from '../../amplify/data/resource'
 import outputs from '../../amplify_outputs.json'
+import styled, {css} from 'styled-components'
+import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
+
+// TODO: move to .env or consts file
+const daysToDeleteCompleted = 20
+const minNumberOfColors = 6
 
 Amplify.configure(outputs)
 const client = generateClient<DayTaskSchema>({
@@ -18,9 +24,6 @@ const ListTitles: Record<List, string> = {
     BACKLOG: 'Organizar',
     DONE: 'Lixeira',
 }
-
-import styled, {css} from 'styled-components'
-import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
 
 const MVPContainer = styled.div``
 
@@ -116,7 +119,7 @@ export const MVP = () => {
 
     useEffect(() => {
         const twentyDaysAgo = new Date()
-        twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20)
+        twentyDaysAgo.setDate(twentyDaysAgo.getDate() - daysToDeleteCompleted)
         const ISOTwentyDaysAgo = twentyDaysAgo.toISOString()
 
         const ISONow = new Date().toISOString()
@@ -138,7 +141,7 @@ export const MVP = () => {
                                 priority = true
                             }
                             if (!!list || priority) {
-                                updateTask(t, {list, priority})
+                                void updateTask(t, {list, priority})
                             }
                         }
 
@@ -147,7 +150,7 @@ export const MVP = () => {
             ).values(),
         )
 
-        const colors = generateColors({nOfColors: Math.max(categories.length, 4)})
+        const colors = generateColors({nOfColors: Math.max(categories.length, minNumberOfColors)})
         setCategoryColors(Object.fromEntries(categories.sort().map((c, i) => [c, colors[i]])))
     }, [dayTasks])
 
@@ -155,7 +158,7 @@ export const MVP = () => {
         event.preventDefault()
 
         void (async () => {
-            const form = new FormData(event.target as HTMLFormElement)
+            const form = new FormData(event.currentTarget)
             let time: string | null = form.get('time') as string
             time = time ? `${time}:00.000` : null
 
@@ -182,7 +185,6 @@ export const MVP = () => {
                 console.error('creation', errors)
             }
 
-            ;(event.target as HTMLFormElement).reset()
             setShowAdd(false)
         })()
     }
@@ -191,50 +193,51 @@ export const MVP = () => {
         event.preventDefault()
 
         void (async () => {
-            const form = new FormData(event.target as HTMLFormElement)
+            const form = new FormData(event.currentTarget)
             let time: string | null = form.get('time') as string
             time = time ? `${time}:00.000` : null
 
-            const {data: _newTask, errors} = await client.models.DayTask.update({
-                title: form.get('title') as string,
-                category: form.get('category') as string,
-                description: (form.get('description') as string) || null,
-                time,
-                priority: form.has('priority'),
-                moveToTodayOn: form.get('moveToTodayOn') ? new Date(form.get('moveToTodayOn') as string).toISOString() : null,
-                enablePriorityOn: form.get('enablePriorityOn') ? new Date(form.get('enablePriorityOn') as string).toISOString() : null,
-                recurrence: {once: true}, // TODO
+            await updateTask(
+                {id: form.get('id') as string},
+                {
+                    title: form.get('title') as string,
+                    category: form.get('category') as string,
+                    description: (form.get('description') as string) || null,
+                    time,
+                    priority: form.has('priority'),
+                    moveToTodayOn: form.get('moveToTodayOn') ? new Date(form.get('moveToTodayOn') as string).toISOString() : null,
+                    enablePriorityOn: form.get('enablePriorityOn') ? new Date(form.get('enablePriorityOn') as string).toISOString() : null,
+                    recurrence: {once: true}, // TODO
 
-                // don't set these
-                id: form.get('id') as string,
-                // list: undefined, // change it only from the lists view
-                // lastCompleted: undefined,
-                // ordering: undefined,
-                // owner: undefined,
-            })
+                    // don't set these
+                    // id: undefined,
+                    // list: undefined, // change it only from the lists view
+                    // lastCompleted: undefined,
+                    // ordering: undefined,
+                    // owner: undefined,
+                },
+            )
 
-            console.log('UPDATED', _newTask)
-            if (errors) {
-                console.error('updating', errors)
-            }
-            ;(event.target as HTMLFormElement).reset()
             setSelectedTask(undefined)
         })()
     }
 
-    const updateTask = (dayTask: DayTask, changeset: Partial<DayTask>) => {
-        void client.models.DayTask.update({id: dayTask.id, ...changeset})
+    const updateTask = async (dayTask: Pick<DayTask, 'id'>, changeset: Partial<DayTask>): Promise<void> => {
+        const {data: _newTask, errors} = await client.models.DayTask.update({id: dayTask.id, ...changeset})
+        console.log('UPDATED', _newTask)
+        if (errors) {
+            console.error('updating', errors)
+        }
     }
 
-    const deleteTask = async ({id, title}: DayTask, skipConfirm?: boolean) => {
+    const deleteTask = async ({id, title}: DayTask, skipConfirm?: boolean): Promise<void> => {
         if (skipConfirm || confirm(`Tem certeza que deseja deletar ${title}?`)) {
             await client.models.DayTask.delete({id})
             setSelectedTask(undefined)
         }
     }
 
-    const getLastOrderingOf = (list: List): number =>
-        dayTasks[list].length > 0 ? Math.ceil(dayTasks[list][dayTasks[list].length - 1].ordering + 1) : 0
+    const getLastOrderingOf = (list: List): number => Math.ceil((dayTasks[list].at(-1)?.ordering ?? 0) + 1)
 
     const toggleCompleteTask = (dayTask: DayTask) => {
         const isComplete = isCompletedToday(dayTask)
@@ -258,7 +261,7 @@ export const MVP = () => {
             lastCompleted = null
         }
 
-        updateTask(dayTask, {lastCompleted, list, ordering: getLastOrderingOf(list)})
+        void updateTask(dayTask, {lastCompleted, list, ordering: getLastOrderingOf(list)})
     }
 
     const isCompletedToday = (dayTask: DayTask): boolean => {
@@ -300,13 +303,13 @@ export const MVP = () => {
         const movedTask = dayTasks[currentList][draggedTaskIndex]
         const previous = draggedTaskIndex > 0 ? dayTasks[currentList][draggedTaskIndex - 1].ordering : undefined
         const next = draggedTaskIndex < dayTasks[currentList].length - 1 ? dayTasks[currentList][draggedTaskIndex + 1].ordering : undefined
-        console.log(movedTask, previous, next)
+
         if (previous === undefined) {
-            updateTask(movedTask, {ordering: Math.floor((next ?? 1) - 1)})
+            void updateTask(movedTask, {ordering: Math.floor((next ?? 1) - 1)})
         } else if (next === undefined) {
-            updateTask(movedTask, {ordering: Math.ceil(previous + 1)})
+            void updateTask(movedTask, {ordering: Math.ceil(previous + 1)})
         } else {
-            updateTask(movedTask, {ordering: (previous + next) / 2})
+            void updateTask(movedTask, {ordering: (previous + next) / 2})
         }
         setDraggedTaskIndex(undefined)
     }
@@ -315,7 +318,6 @@ export const MVP = () => {
         <MVPContainer>
             <Authenticator>
                 {({signOut, user}) => {
-                    // console.log(_user)
                     setIsAuthenticated(true)
                     return (
                         <Flex
@@ -412,11 +414,9 @@ export const MVP = () => {
                                                 required
                                                 color={'#fff'}
                                                 onChange={(e) => {
-                                                    console.log('?', categoryColors[e.currentTarget.value])
                                                     setSelectedCategoryColor(categoryColors[e.currentTarget.value] ?? undefined)
                                                 }}
                                                 onSelect={(e) => {
-                                                    console.log('?', e.id)
                                                     setSelectedCategoryColor(categoryColors[e.id] ?? undefined)
                                                 }}
                                             />
@@ -936,13 +936,13 @@ export const MVP = () => {
 
                                                         switch (dayTask.list) {
                                                             case 'TODAY':
-                                                                updateTask(dayTask, {
+                                                                void updateTask(dayTask, {
                                                                     list: 'BACKLOG',
                                                                     ordering: getLastOrderingOf('BACKLOG'),
                                                                 })
                                                                 break
                                                             case 'BACKLOG':
-                                                                updateTask(dayTask, {
+                                                                void updateTask(dayTask, {
                                                                     list: 'TODAY',
                                                                     ordering: getLastOrderingOf('TODAY'),
                                                                 })
@@ -967,7 +967,7 @@ export const MVP = () => {
                                                     borderRadius={'100%'}
                                                     onClick={(e) => {
                                                         e.stopPropagation()
-                                                        updateTask(dayTask, {priority: !dayTask.priority})
+                                                        void updateTask(dayTask, {priority: !dayTask.priority})
                                                     }}
                                                     lineHeight={'1.4rem'}
                                                     style={{cursor: 'pointer', userSelect: 'none'}}

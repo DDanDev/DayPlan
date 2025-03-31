@@ -44,6 +44,11 @@ export default tseslint.config(
                     ignoreRestSiblings: false,
                 },
             ],
+            eqeqeq: ['error'],
+            'no-magic-numbers': [
+                'error',
+                {ignore: [1, -1, 0, 2], ignoreArrayIndexes: true, ignoreDefaultValues: true, detectObjects: true},
+            ],
         },
     },
 )
