@@ -112,7 +112,7 @@ export const MVP = () => {
             new Set(
                 dayTasks.map((t) => {
                     if (t.list === 'DONE' && t.recurrence.once !== false && t.lastCompleted && t.lastCompleted < ISOTwentyDaysAgo) {
-                        deleteTask(t)
+                        void deleteTask(t)
                     }
 
                     return t.category
@@ -149,7 +149,9 @@ export const MVP = () => {
             })
 
             console.log('CREATED', _newTask)
-            errors && console.error('creation', errors)
+            if (errors) {
+                console.error('creation', errors)
+            }
 
             // void fetchDayTasks() // replace for subscription
             ;(event.target as HTMLFormElement).reset()
@@ -252,7 +254,7 @@ export const MVP = () => {
                                                 ['description', 'Descrição (opcional)'],
                                             ] satisfies [string, string][]
                                         ).map((input) => (
-                                            <View position={'relative'}>
+                                            <View position={'relative'} key={`container${input[0]}`}>
                                                 {/* FloatingLabelInput */}
                                                 <Label
                                                     key={`label${input[0]}`}
@@ -419,7 +421,7 @@ export const MVP = () => {
                                                                 updateTask(dayTask, {list: 'TODAY'})
                                                                 break
                                                             case 'DONE':
-                                                                deleteTask(dayTask)
+                                                                void deleteTask(dayTask)
                                                                 break
                                                         }
                                                     }}
@@ -533,7 +535,7 @@ export const MVP = () => {
                             <Button
                                 onClick={() => {
                                     setIsAuthenticated(false)
-                                    signOut && signOut()
+                                    if (signOut) signOut()
                                 }}
                                 backgroundColor={'#333'}
                                 color={'#aaa'}
