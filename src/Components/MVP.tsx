@@ -58,14 +58,14 @@ const WhiteAutocomplete = styled(Autocomplete)`
 `
 
 export const MVP = () => {
-    const [dayTasks, setDayTasks] = useState<DayTask[]>([])
+    const [dayTasks, setDayTasks] = useState<Record<List, DayTask[]>>({TODAY: [], BACKLOG: [], DONE: []})
     const [currentList, setCurrentList] = useState<List>('TODAY')
     const [showAdd, setShowAdd] = useState<boolean>(false)
     const [selectedTask, setSelectedTask] = useState<DayTask>()
     const [categoryColors, setCategoryColors] = useState<Record<string, ColorDefinition | undefined>>({})
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
     const [selectedCategoryColor, setSelectedCategoryColor] = useState<ColorDefinition | undefined>(undefined)
-    const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null)
+    const [draggedTaskIndex, setDraggedTaskIndex] = useState<number>()
 
     useEffect(() => {
         setSelectedCategoryColor(undefined)
@@ -86,11 +86,23 @@ export const MVP = () => {
             // filter: {list: {eq: currentList}}
         }).subscribe({
             next: ({items}) => {
-                setDayTasks([...items])
+                setDayTasks(
+                    items
+                        .sort((a, b) => a.ordering - b.ordering)
+                        .reduce<Record<List, DayTask[]>>(
+                            (acc, i) => {
+                                acc[i.list].push(i)
+                                return acc
+                            },
+                            {TODAY: [], BACKLOG: [], DONE: []},
+                        ),
+                )
             },
-            error: (error) => {
+            error: (error: unknown) => {
                 console.error('subscribe error', error)
-                alert(error)
+                alert(
+                    `Error connecting to app: ${error instanceof Object && 'message' in error && typeof error.message === 'string' ? error.message : 'unknown error'}. ${JSON.stringify(error)}`,
+                ) // TODO: replace alerts and confirms with proper popups
             },
         })
 
@@ -111,25 +123,27 @@ export const MVP = () => {
 
         const categories: string[] = Array.from(
             new Set(
-                dayTasks.map((t) => {
-                    if (t.list === 'DONE' && t.recurrence.once !== false && t.lastCompleted && t.lastCompleted < ISOTwentyDaysAgo) {
-                        void deleteTask(t)
-                    } else {
-                        let list: List | undefined = undefined
-                        let priority: boolean | undefined = undefined
-                        if (t.list === 'BACKLOG' && t.moveToTodayOn && t.moveToTodayOn < ISONow) {
-                            list = 'TODAY'
+                Object.values(dayTasks)
+                    .flat()
+                    .map((t) => {
+                        if (t.list === 'DONE' && t.recurrence.once !== false && t.lastCompleted && t.lastCompleted < ISOTwentyDaysAgo) {
+                            void deleteTask(t)
+                        } else {
+                            let list: List | undefined = undefined
+                            let priority: boolean | undefined = undefined
+                            if (t.list === 'BACKLOG' && t.moveToTodayOn && t.moveToTodayOn < ISONow) {
+                                list = 'TODAY'
+                            }
+                            if (!t.priority && t.enablePriorityOn && t.enablePriorityOn < ISONow) {
+                                priority = true
+                            }
+                            if (!!list || priority) {
+                                updateTask(t, {list, priority})
+                            }
                         }
-                        if (!t.priority && t.enablePriorityOn && t.enablePriorityOn < ISONow) {
-                            priority = true
-                        }
-                        if (!!list || priority) {
-                            updateTask(t, {list, priority})
-                        }
-                    }
 
-                    return t.category
-                }),
+                        return t.category
+                    }),
             ).values(),
         )
 
@@ -150,6 +164,7 @@ export const MVP = () => {
                 category: form.get('category') as string,
                 description: (form.get('description') as string) || null,
                 list: currentList,
+                ordering: getLastOrderingOf(currentList),
                 time,
                 priority: form.has('priority'),
                 moveToTodayOn: form.get('moveToTodayOn') ? new Date(form.get('moveToTodayOn') as string).toISOString() : null,
@@ -191,9 +206,10 @@ export const MVP = () => {
                 recurrence: {once: true}, // TODO
 
                 // don't set these
-                list: undefined, // change it only from the lists view
-                lastCompleted: undefined,
                 id: form.get('id') as string,
+                // list: undefined, // change it only from the lists view
+                // lastCompleted: undefined,
+                // ordering: undefined,
                 // owner: undefined,
             })
 
@@ -217,6 +233,9 @@ export const MVP = () => {
         }
     }
 
+    const getLastOrderingOf = (list: List): number =>
+        dayTasks[list].length > 0 ? Math.ceil(dayTasks[list][dayTasks[list].length - 1].ordering + 1) : 0
+
     const toggleCompleteTask = (dayTask: DayTask) => {
         const isComplete = isCompletedToday(dayTask)
         const hasRecurrenceRule = dayTask.recurrence.once === false
@@ -239,7 +258,7 @@ export const MVP = () => {
             lastCompleted = null
         }
 
-        updateTask(dayTask, {lastCompleted, list})
+        updateTask(dayTask, {lastCompleted, list, ordering: getLastOrderingOf(list)})
     }
 
     const isCompletedToday = (dayTask: DayTask): boolean => {
@@ -252,6 +271,7 @@ export const MVP = () => {
         const lastCompleted = new Date(dayTask.lastCompleted)
         const now = new Date()
         return (
+            // TODO: user configs: let them choose what time is considered to be the day change, instead of midnight. PS: this is for recurrent tasks, which go back to the backlog. Non-recurrent ones are always complete
             lastCompleted.getDate() === now.getDate() &&
             lastCompleted.getMonth() === now.getMonth() &&
             lastCompleted.getFullYear() === now.getFullYear()
@@ -259,25 +279,36 @@ export const MVP = () => {
     }
 
     // TODO: enable drag on mobile
-    const handleDragStart = (id: string) => {
-        setDraggedTaskId(id)
+
+    const handleDragStart = (index: number) => {
+        setDraggedTaskIndex(index)
     }
 
-    const handleDragOver = (targetId: string) => {
-        if (draggedTaskId && draggedTaskId !== targetId) {
+    const handleDragOver = (targetTaskIndex: number) => {
+        if (draggedTaskIndex !== undefined && draggedTaskIndex !== targetTaskIndex) {
             // event.preventDefault() // Allow dropping apparently not actually needed
-            const draggedIndex = dayTasks.findIndex((t) => t.id === draggedTaskId)
-            const targetIndex = dayTasks.findIndex((t) => t.id === targetId)
-            const reorderedTasks = [...dayTasks]
-            const [draggedTask] = reorderedTasks.splice(draggedIndex, 1)
-            reorderedTasks.splice(targetIndex, 0, draggedTask)
-            setDayTasks(reorderedTasks)
+            const reorderedTasks = [...dayTasks[currentList]]
+            const [draggedTask] = reorderedTasks.splice(draggedTaskIndex, 1)
+            reorderedTasks.splice(targetTaskIndex, 0, draggedTask)
+            setDraggedTaskIndex(targetTaskIndex)
+            setDayTasks((cur) => ({...cur, [currentList]: reorderedTasks}))
         }
     }
 
     const handleDragEnd = () => {
-        // TODO persist order through updates
-        setDraggedTaskId(null)
+        if (draggedTaskIndex === undefined) return
+        const movedTask = dayTasks[currentList][draggedTaskIndex]
+        const previous = draggedTaskIndex > 0 ? dayTasks[currentList][draggedTaskIndex - 1].ordering : undefined
+        const next = draggedTaskIndex < dayTasks[currentList].length - 1 ? dayTasks[currentList][draggedTaskIndex + 1].ordering : undefined
+        console.log(movedTask, previous, next)
+        if (previous === undefined) {
+            updateTask(movedTask, {ordering: Math.floor((next ?? 1) - 1)})
+        } else if (next === undefined) {
+            updateTask(movedTask, {ordering: Math.ceil(previous + 1)})
+        } else {
+            updateTask(movedTask, {ordering: (previous + next) / 2})
+        }
+        setDraggedTaskIndex(undefined)
     }
 
     return (
@@ -840,125 +871,127 @@ export const MVP = () => {
                                     <Heading level={4} backgroundColor={'#aaa'} width={'100vw'}>
                                         {ListTitles[currentList]} - {new Date().toLocaleDateString()}
                                     </Heading>
-                                    {dayTasks
-                                        .filter((t) => t.list === currentList)
-                                        .map((dayTask) => (
-                                            <div
-                                                key={dayTask.id + 'container'}
-                                                draggable
-                                                onDragStart={() => {
-                                                    handleDragStart(dayTask.id)
+                                    {dayTasks[currentList].map((dayTask, index) => (
+                                        <div
+                                            key={dayTask.id + 'container'}
+                                            draggable
+                                            onDragStart={() => {
+                                                handleDragStart(index)
+                                            }}
+                                            onDragOver={() => {
+                                                handleDragOver(index)
+                                            }}
+                                            onDragEnd={handleDragEnd}
+                                            style={{cursor: 'grab'}}
+                                        >
+                                            <Flex
+                                                key={dayTask.id}
+                                                justifyContent='end'
+                                                alignItems='center'
+                                                gap='1rem'
+                                                border='1px solid #ccc'
+                                                padding='1rem'
+                                                onClick={() => {
+                                                    setSelectedTask(dayTask)
                                                 }}
-                                                onDragOver={() => {
-                                                    handleDragOver(dayTask.id)
-                                                }}
-                                                onDragEnd={handleDragEnd}
-                                                style={{cursor: 'grab'}}
+                                                backgroundColor={dayTask.priority ? categoryColors[dayTask.category]?.baseColor : undefined}
+                                                width={'100vw'}
+                                                // onMouseOver={(e) => {
+                                                //     // e.currentTarget.style.outline = 'solid 3px #99f' // TODO think of something better to highlight each item is selectable
+                                                // }}
+                                                // onMouseOut={(e) => {
+                                                //     // e.currentTarget.style.outline = 'unset'
+                                                // }}
                                             >
                                                 <Flex
-                                                    key={dayTask.id}
-                                                    justifyContent='end'
-                                                    alignItems='center'
-                                                    gap='1rem'
-                                                    border='1px solid #ccc'
-                                                    padding='1rem'
-                                                    onClick={() => {
-                                                        setSelectedTask(dayTask)
-                                                    }}
-                                                    backgroundColor={
-                                                        dayTask.priority ? categoryColors[dayTask.category]?.baseColor : undefined
-                                                    }
-                                                    width={'100vw'}
-                                                    // onMouseOver={(e) => {
-                                                    //     // e.currentTarget.style.outline = 'solid 3px #99f' // TODO think of something better to highlight each item is selectable
-                                                    // }}
-                                                    // onMouseOut={(e) => {
-                                                    //     // e.currentTarget.style.outline = 'unset'
-                                                    // }}
+                                                    direction={'column'}
+                                                    justifyContent={'space-between'}
+                                                    flex={'1'}
+                                                    alignItems={'start'}
+                                                    textAlign={'left'}
                                                 >
-                                                    <Flex
-                                                        direction={'column'}
-                                                        justifyContent={'space-between'}
-                                                        flex={'1'}
-                                                        alignItems={'start'}
-                                                        textAlign={'left'}
-                                                    >
-                                                        <Text fontWeight={600}>{dayTask.title}</Text>
-                                                        {dayTask.time && <Text>{dayTask.time.replace(':00.000', '')}</Text>}
-                                                    </Flex>
-                                                    <Text
-                                                        backgroundColor={categoryColors[dayTask.category]?.offsetColor}
-                                                        padding={'1rem'}
-                                                        borderRadius={'0.5rem'}
-                                                        fontWeight={600}
-                                                        width={'6rem'}
-                                                        isTruncated={true}
-                                                    >
-                                                        {dayTask.category}
-                                                    </Text>
-                                                    <Text
-                                                        backgroundColor={dayTask.list === 'DONE' ? '#c11' : '#aaa'}
-                                                        color={dayTask.list === 'DONE' ? '#ddd' : '#333'}
-                                                        border={'solid 1px black'}
-                                                        height={'1.5rem'}
-                                                        width={'1.5rem'}
-                                                        fontWeight={900}
-                                                        borderRadius={'100%'}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-
-                                                            switch (dayTask.list) {
-                                                                case 'TODAY':
-                                                                    updateTask(dayTask, {list: 'BACKLOG'})
-                                                                    break
-                                                                case 'BACKLOG':
-                                                                    updateTask(dayTask, {list: 'TODAY'})
-                                                                    break
-                                                                case 'DONE':
-                                                                    void deleteTask(dayTask)
-                                                                    break
-                                                            }
-                                                        }}
-                                                        lineHeight={'1.4rem'}
-                                                        style={{cursor: 'pointer', userSelect: 'none'}}
-                                                    >
-                                                        {dayTask.list === 'BACKLOG' ? '+' : 'X'}
-                                                    </Text>
-                                                    <Text
-                                                        backgroundColor={dayTask.priority ? '#000' : 'unset'}
-                                                        color={dayTask.priority ? '#fff' : '#000'}
-                                                        border={'solid 1px black'}
-                                                        height={'1.5rem'}
-                                                        width={'1.5rem'}
-                                                        fontWeight={900}
-                                                        borderRadius={'100%'}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            updateTask(dayTask, {priority: !dayTask.priority})
-                                                        }}
-                                                        lineHeight={'1.4rem'}
-                                                        style={{cursor: 'pointer', userSelect: 'none'}}
-                                                    >
-                                                        !
-                                                    </Text>
-                                                    <Text
-                                                        border={'solid 1px black'}
-                                                        height={'1.5rem'}
-                                                        width={'1.5rem'}
-                                                        fontWeight={900}
-                                                        borderRadius={'100%'}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            toggleCompleteTask(dayTask)
-                                                        }}
-                                                        lineHeight={'1.1rem'}
-                                                        style={{cursor: 'pointer', userSelect: 'none'}}
-                                                    >
-                                                        {isCompletedToday(dayTask) ? '✔️' : undefined}
-                                                    </Text>
+                                                    <Text fontWeight={600}>{dayTask.title}</Text>
+                                                    {dayTask.time && <Text>{dayTask.time.replace(':00.000', '')}</Text>}
                                                 </Flex>
-                                            </div>
-                                        ))}
+                                                <Text
+                                                    backgroundColor={categoryColors[dayTask.category]?.offsetColor}
+                                                    padding={'1rem'}
+                                                    borderRadius={'0.5rem'}
+                                                    fontWeight={600}
+                                                    width={'6rem'}
+                                                    isTruncated={true}
+                                                >
+                                                    {dayTask.category}
+                                                </Text>
+                                                <Text
+                                                    backgroundColor={dayTask.list === 'DONE' ? '#c11' : '#aaa'}
+                                                    color={dayTask.list === 'DONE' ? '#ddd' : '#333'}
+                                                    border={'solid 1px black'}
+                                                    height={'1.5rem'}
+                                                    width={'1.5rem'}
+                                                    fontWeight={900}
+                                                    borderRadius={'100%'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+
+                                                        switch (dayTask.list) {
+                                                            case 'TODAY':
+                                                                updateTask(dayTask, {
+                                                                    list: 'BACKLOG',
+                                                                    ordering: getLastOrderingOf('BACKLOG'),
+                                                                })
+                                                                break
+                                                            case 'BACKLOG':
+                                                                updateTask(dayTask, {
+                                                                    list: 'TODAY',
+                                                                    ordering: getLastOrderingOf('TODAY'),
+                                                                })
+                                                                break
+                                                            case 'DONE':
+                                                                void deleteTask(dayTask)
+                                                                break
+                                                        }
+                                                    }}
+                                                    lineHeight={'1.4rem'}
+                                                    style={{cursor: 'pointer', userSelect: 'none'}}
+                                                >
+                                                    {dayTask.list === 'BACKLOG' ? '+' : 'X'}
+                                                </Text>
+                                                <Text
+                                                    backgroundColor={dayTask.priority ? '#000' : 'unset'}
+                                                    color={dayTask.priority ? '#fff' : '#000'}
+                                                    border={'solid 1px black'}
+                                                    height={'1.5rem'}
+                                                    width={'1.5rem'}
+                                                    fontWeight={900}
+                                                    borderRadius={'100%'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        updateTask(dayTask, {priority: !dayTask.priority})
+                                                    }}
+                                                    lineHeight={'1.4rem'}
+                                                    style={{cursor: 'pointer', userSelect: 'none'}}
+                                                >
+                                                    !
+                                                </Text>
+                                                <Text
+                                                    border={'solid 1px black'}
+                                                    height={'1.5rem'}
+                                                    width={'1.5rem'}
+                                                    fontWeight={900}
+                                                    borderRadius={'100%'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        toggleCompleteTask(dayTask)
+                                                    }}
+                                                    lineHeight={'1.1rem'}
+                                                    style={{cursor: 'pointer', userSelect: 'none'}}
+                                                >
+                                                    {isCompletedToday(dayTask) ? '✔️' : undefined}
+                                                </Text>
+                                            </Flex>
+                                        </div>
+                                    ))}
                                 </Flex>
                             )}
                             <Flex direction={'column'} flex={1} justifyContent={'end'}>
@@ -979,10 +1012,8 @@ export const MVP = () => {
                                     <Button
                                         onClick={() => {
                                             if (confirm('Tem certeza que deseja deletar todas as tarefas na lixeira?')) {
-                                                dayTasks.forEach((t) => {
-                                                    if (t.list === 'DONE') {
-                                                        void deleteTask(t, true)
-                                                    }
+                                                dayTasks.DONE.forEach((t) => {
+                                                    void deleteTask(t, true)
                                                 })
                                             }
                                         }}

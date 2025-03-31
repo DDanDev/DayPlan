@@ -28,6 +28,7 @@ const schema = a.schema({
             moveToTodayOn: a.datetime(),
             enablePriorityOn: a.datetime(),
             description: a.string().validate((v) => v.minLength(1).maxLength(200)),
+            ordering: a.float().required(),
         })
         .authorization((allow) => [allow.owner()]),
 })
