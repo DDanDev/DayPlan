@@ -258,6 +258,7 @@ export const MVP = () => {
         )
     }
 
+    // TODO: enable drag on mobile
     const handleDragStart = (id: string) => {
         setDraggedTaskId(id)
     }
@@ -429,8 +430,11 @@ export const MVP = () => {
                                                 </Label>
                                                 <Text
                                                     position={'absolute'}
-                                                    top={'0.55rem'}
-                                                    left={'0.8rem'}
+                                                    top={0}
+                                                    left={0}
+                                                    height={'100%'}
+                                                    width={'2rem'}
+                                                    lineHeight={'2.5rem'}
                                                     color={'#ddd'}
                                                     style={{userSelect: 'none', cursor: 'pointer'}}
                                                     onClick={() => {
@@ -451,7 +455,7 @@ export const MVP = () => {
                                             />
                                         </Flex>
                                         <Flex wrap={'wrap'}>
-                                            <View position={'relative'} flex={1}>
+                                            <View position={'relative'} flex={1} minWidth={'14rem'}>
                                                 <Label
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
@@ -467,8 +471,11 @@ export const MVP = () => {
                                                 </Label>
                                                 <Text
                                                     position={'absolute'}
-                                                    top={'0.55rem'}
-                                                    left={'0.8rem'}
+                                                    top={0}
+                                                    left={0}
+                                                    height={'100%'}
+                                                    width={'2rem'}
+                                                    lineHeight={'2.5rem'}
                                                     color={'#ddd'}
                                                     style={{userSelect: 'none', cursor: 'pointer'}}
                                                     onClick={() => {
@@ -479,7 +486,7 @@ export const MVP = () => {
                                                 </Text>
                                                 <WhiteInput type={'datetime-local'} id={'moveToTodayOnInput'} name={'moveToTodayOn'} />
                                             </View>
-                                            <View position={'relative'} flex={1}>
+                                            <View position={'relative'} flex={1} minWidth={'14rem'}>
                                                 <Label
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
@@ -495,8 +502,11 @@ export const MVP = () => {
                                                 </Label>
                                                 <Text
                                                     position={'absolute'}
-                                                    top={'0.55rem'}
-                                                    left={'0.8rem'}
+                                                    top={0}
+                                                    left={0}
+                                                    height={'100%'}
+                                                    width={'2rem'}
+                                                    lineHeight={'2.5rem'}
                                                     color={'#ddd'}
                                                     style={{userSelect: 'none', cursor: 'pointer'}}
                                                     onClick={() => {
@@ -651,8 +661,11 @@ export const MVP = () => {
                                                 </Label>
                                                 <Text
                                                     position={'absolute'}
-                                                    top={'0.55rem'}
-                                                    left={'0.8rem'}
+                                                    top={0}
+                                                    left={0}
+                                                    height={'100%'}
+                                                    width={'2rem'}
+                                                    lineHeight={'2.5rem'}
                                                     color={'#ddd'}
                                                     style={{userSelect: 'none', cursor: 'pointer'}}
                                                     onClick={() => {
@@ -679,7 +692,7 @@ export const MVP = () => {
                                             />
                                         </Flex>
                                         <Flex wrap={'wrap'}>
-                                            <View position={'relative'} flex={1}>
+                                            <View position={'relative'} flex={1} minWidth={'14rem'}>
                                                 <Label
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
@@ -695,8 +708,11 @@ export const MVP = () => {
                                                 </Label>
                                                 <Text
                                                     position={'absolute'}
-                                                    top={'0.55rem'}
-                                                    left={'0.8rem'}
+                                                    top={0}
+                                                    left={0}
+                                                    height={'100%'}
+                                                    width={'2rem'}
+                                                    lineHeight={'2.5rem'}
                                                     color={'#ddd'}
                                                     style={{userSelect: 'none', cursor: 'pointer'}}
                                                     onClick={() => {
@@ -712,7 +728,7 @@ export const MVP = () => {
                                                     defaultValue={selectedTask.moveToTodayOn?.replace(/:\d{2}.\d{3}Z$/, '') ?? undefined}
                                                 />
                                             </View>
-                                            <View position={'relative'} flex={1}>
+                                            <View position={'relative'} flex={1} minWidth={'14rem'}>
                                                 <Label
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
@@ -728,8 +744,11 @@ export const MVP = () => {
                                                 </Label>
                                                 <Text
                                                     position={'absolute'}
-                                                    top={'0.55rem'}
-                                                    left={'0.8rem'}
+                                                    top={0}
+                                                    left={0}
+                                                    height={'100%'}
+                                                    width={'2rem'}
+                                                    lineHeight={'2.5rem'}
                                                     color={'#ddd'}
                                                     style={{userSelect: 'none', cursor: 'pointer'}}
                                                     onClick={() => {
@@ -748,7 +767,7 @@ export const MVP = () => {
                                             </View>
                                         </Flex>
                                         <Flex wrap={'wrap'}>
-                                            <View position={'relative'} flex={1}>
+                                            <View position={'relative'} flex={1} minWidth={'14rem'}>
                                                 <Label
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
@@ -770,7 +789,7 @@ export const MVP = () => {
                                                     value={selectedTask.createdAt.replace(/:\d{2}.\d{3}Z$/, '')}
                                                 />
                                             </View>
-                                            <View position={'relative'} flex={1}>
+                                            <View position={'relative'} flex={1} minWidth={'14rem'}>
                                                 <Label
                                                     position={'absolute'}
                                                     top={'-0.6rem'}
@@ -901,7 +920,7 @@ export const MVP = () => {
                                                             }
                                                         }}
                                                         lineHeight={'1.4rem'}
-                                                        style={{cursor: 'pointer'}}
+                                                        style={{cursor: 'pointer', userSelect: 'none'}}
                                                     >
                                                         {dayTask.list === 'BACKLOG' ? '+' : 'X'}
                                                     </Text>
@@ -918,7 +937,7 @@ export const MVP = () => {
                                                             updateTask(dayTask, {priority: !dayTask.priority})
                                                         }}
                                                         lineHeight={'1.4rem'}
-                                                        style={{cursor: 'pointer'}}
+                                                        style={{cursor: 'pointer', userSelect: 'none'}}
                                                     >
                                                         !
                                                     </Text>
@@ -933,7 +952,7 @@ export const MVP = () => {
                                                             toggleCompleteTask(dayTask)
                                                         }}
                                                         lineHeight={'1.1rem'}
-                                                        style={{cursor: 'pointer'}}
+                                                        style={{cursor: 'pointer', userSelect: 'none'}}
                                                     >
                                                         {isCompletedToday(dayTask) ? '✔️' : undefined}
                                                     </Text>

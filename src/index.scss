@@ -17,6 +17,8 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+
     --amplify-components-field-label-color: #fff !important; // TODO remove important, probably need to import this after amplify's default css
 }
 
