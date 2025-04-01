@@ -4,6 +4,12 @@ DayPlan is a minimalistic planner for your day to day needs of keeping up with e
 
 You can create an account and start using DayPlan alpha version on https://app-prod.d31dr6nrfnggmy.amplifyapp.com/. Please send feedback as issues in this repository.
 
+## Video Demo
+
+Demonstration here, recorded on version `alpha v0.0.1-Hotfix1`: 
+
+https://drive.google.com/file/d/1dmN4STTQ-c5m98YIBbw5wlnJWtUlDnc8/view?usp=sharing
+
 <div align='center'><img src="./readme/image.png" width="200px" style='margin: auto;' /></div>
 
 ### Summary:
