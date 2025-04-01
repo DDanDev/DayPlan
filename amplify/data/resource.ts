@@ -4,8 +4,8 @@ const schema = a.schema({
     Recurrence: a.customType({
         once: a.boolean(),
         days: a.integer(),
-        weekDay: a.integer(),
-        monthDay: a.integer(),
+        weekDay: a.integer().array(),
+        monthDay: a.integer().array(),
     }),
 
     Lists: a.enum(['TODAY', 'BACKLOG', 'DONE']),
@@ -28,6 +28,7 @@ const schema = a.schema({
             moveToTodayOn: a.datetime(),
             enablePriorityOn: a.datetime(),
             description: a.string().validate((v) => v.minLength(1).maxLength(200)),
+            ordering: a.float().required(),
         })
         .authorization((allow) => [allow.owner()]),
 })

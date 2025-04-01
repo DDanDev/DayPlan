@@ -3,11 +3,14 @@ import dayPlanLogo from '/DayPlan logo.png'
 import styled from 'styled-components'
 
 const AppContainer = styled.div`
-    max-width: 1280px;
     width: 100vw;
-    margin: 0 auto;
-    padding: 2rem;
+    margin: 0;
+    padding: 0;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    flex-grow: 1;
 `
 
 const Logo = styled.img`
@@ -17,7 +20,9 @@ const Logo = styled.img`
 export const App = () => {
     return (
         <AppContainer>
-            <Logo src={dayPlanLogo} alt='DayPlan - Organize seu tempo' />
+            <a href={'/'}>
+                <Logo src={dayPlanLogo} alt='DayPlan - Organize seu tempo' />
+            </a>
             <MVP />
         </AppContainer>
     )
