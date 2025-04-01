@@ -226,7 +226,11 @@ export const MVP = () => {
         })()
     }
 
-    const updateTask = async (dayTask: Pick<DayTask, 'id'>, changeset: Partial<DayTask>): Promise<void> => {
+    type Forbid<T, K extends keyof T> = {[P in keyof T]?: P extends K ? never : T[P]}
+    const updateTask = async (
+        dayTask: Pick<DayTask, 'id'>,
+        changeset: Forbid<DayTask, 'id' | 'owner' | 'createdAt' | 'updatedAt'>,
+    ): Promise<void> => {
         const {data: _newTask, errors} = await client.models.DayTask.update({id: dayTask.id, ...changeset})
         console.log('UPDATED', _newTask)
         if (errors) {
@@ -328,13 +332,19 @@ export const MVP = () => {
         }
     }
 
+    const getDateTimeLocalInputValueFromISODateString = (isoString: string) => {
+        const asDate = new Date(isoString)
+        asDate.setMinutes(asDate.getMinutes() - asDate.getTimezoneOffset())
+        return asDate.toISOString().replace(/:\d{2}.\d{3}Z$/, '')
+    }
+
     // TODO: replace buttons for mobile reordering with drag, which for some reason didn't work with touchstart nor draggable
     const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
 
     return (
         <MVPContainer>
             <Authenticator variation='modal'>
-                {({signOut, user}) => {
+                {({signOut}) => {
                     setIsAuthenticated(true)
                     return (
                         <Flex
@@ -832,8 +842,7 @@ export const MVP = () => {
                                                     type={'datetime-local'}
                                                     id={'createdAt'}
                                                     readOnly
-                                                    // disabled
-                                                    value={selectedTask.createdAt.replace(/:\d{2}.\d{3}Z$/, '')}
+                                                    value={getDateTimeLocalInputValueFromISODateString(selectedTask.createdAt)}
                                                 />
                                             </View>
                                             <View position={'relative'} flex={1} minWidth={'14rem'}>
@@ -854,8 +863,7 @@ export const MVP = () => {
                                                     type={'datetime-local'}
                                                     id={'updatedAt'}
                                                     readOnly
-                                                    // disabled
-                                                    value={selectedTask.updatedAt.replace(/:\d{2}.\d{3}Z$/, '')}
+                                                    value={getDateTimeLocalInputValueFromISODateString(selectedTask.updatedAt)}
                                                 />
                                             </View>
                                         </Flex>
@@ -1109,7 +1117,7 @@ export const MVP = () => {
                                     backgroundColor={'#333'}
                                     color={'#aaa'}
                                     fontWeight={300}
-                                    fontSize={'0.5rem'}
+                                    fontSize={'0.7rem'}
                                     width={'fit-content'}
                                     position={'absolute'}
                                     bottom={'-1.5rem'}
@@ -1117,7 +1125,7 @@ export const MVP = () => {
                                     padding={'0.1rem 0.5rem'}
                                     style={{userSelect: 'none'}}
                                 >
-                                    Sair da conta {user?.signInDetails?.loginId}
+                                    Sair da conta
                                 </Button>
                             </Flex>
                         </Flex>
