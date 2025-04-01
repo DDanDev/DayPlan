@@ -4,8 +4,8 @@ const schema = a.schema({
     Recurrence: a.customType({
         once: a.boolean(),
         days: a.integer(),
-        weekDay: a.integer(),
-        monthDay: a.integer(),
+        weekDay: a.integer().array(),
+        monthDay: a.integer().array(),
     }),
 
     Lists: a.enum(['TODAY', 'BACKLOG', 'DONE']),
