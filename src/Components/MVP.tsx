@@ -10,7 +10,7 @@ import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
 
 // TODO: move to .env or consts file
 const daysToDeleteCompleted = 20
-const minNumberOfColors = 6
+const minNumberOfColors = 8
 
 Amplify.configure(outputs)
 const client = generateClient<DayTaskSchema>({
@@ -25,7 +25,11 @@ const ListTitles: Record<List, string> = {
     DONE: 'Lixeira',
 }
 
-const MVPContainer = styled.div``
+const MVPContainer = styled.div`
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+`
 
 const inputResets = css`
     &,
@@ -301,8 +305,19 @@ export const MVP = () => {
     const handleDragEnd = () => {
         if (draggedTaskIndex === undefined) return
         const movedTask = dayTasks[currentList][draggedTaskIndex]
-        const previous = draggedTaskIndex > 0 ? dayTasks[currentList][draggedTaskIndex - 1].ordering : undefined
-        const next = draggedTaskIndex < dayTasks[currentList].length - 1 ? dayTasks[currentList][draggedTaskIndex + 1].ordering : undefined
+        updateOrdering(movedTask, draggedTaskIndex)
+        setDraggedTaskIndex(undefined)
+    }
+
+    const moveTask = (dayTask: DayTask, curIndex: number, direction: 'up' | 'down') => {
+        const newIndex = Math.max(Math.min(curIndex + (direction === 'down' ? 1 : -1), dayTasks[dayTask.list].length - 1), 0)
+        console.log(newIndex)
+        updateOrdering(dayTask, newIndex)
+    }
+
+    const updateOrdering = (movedTask: DayTask, newIndex: number) => {
+        const previous = newIndex > 0 ? dayTasks[movedTask.list][newIndex - 1].ordering : undefined
+        const next = newIndex < dayTasks[movedTask.list].length - 1 ? dayTasks[movedTask.list][newIndex + 1].ordering : undefined
 
         if (previous === undefined) {
             void updateTask(movedTask, {ordering: Math.floor((next ?? 1) - 1)})
@@ -311,23 +326,24 @@ export const MVP = () => {
         } else {
             void updateTask(movedTask, {ordering: (previous + next) / 2})
         }
-        setDraggedTaskIndex(undefined)
     }
+
+    // TODO: replace buttons for mobile reordering with drag, which for some reason didn't work with touchstart nor draggable
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
 
     return (
         <MVPContainer>
-            <Authenticator>
+            <Authenticator variation='modal'>
                 {({signOut, user}) => {
                     setIsAuthenticated(true)
                     return (
                         <Flex
                             className='App'
-                            minHeight={'calc(100vh - 18rem)'}
                             justifyContent='space-between'
                             alignItems='center'
                             direction='column'
-                            width='70%'
                             margin='0 auto'
+                            flex={1}
                         >
                             {showAdd ? (
                                 <View as='form' onSubmit={createTask}>
@@ -866,20 +882,19 @@ export const MVP = () => {
                                     </Flex>
                                 </View>
                             ) : (
-                                // </Flex>
                                 <Flex direction={'column'} gap={0}>
-                                    <Heading level={4} backgroundColor={'#aaa'} width={'100vw'}>
-                                        {ListTitles[currentList]} - {new Date().toLocaleDateString()}
+                                    <Heading level={4} backgroundColor={'#347'} color={'#eee'} width={'100vw'}>
+                                        {ListTitles[currentList]} - {new Date().toLocaleDateString('pt-BR')}
                                     </Heading>
-                                    {dayTasks[currentList].map((dayTask, index) => (
+                                    {dayTasks[currentList].map((dayTask, taskIndex) => (
                                         <div
                                             key={dayTask.id + 'container'}
                                             draggable
                                             onDragStart={() => {
-                                                handleDragStart(index)
+                                                handleDragStart(taskIndex)
                                             }}
                                             onDragOver={() => {
-                                                handleDragOver(index)
+                                                handleDragOver(taskIndex)
                                             }}
                                             onDragEnd={handleDragEnd}
                                             style={{cursor: 'grab'}}
@@ -888,14 +903,15 @@ export const MVP = () => {
                                                 key={dayTask.id}
                                                 justifyContent='end'
                                                 alignItems='center'
-                                                gap='1rem'
+                                                gap='0.75rem'
                                                 border='1px solid #ccc'
-                                                padding='1rem'
+                                                padding={`0.75rem 0.75rem 0.75rem ${isTouchDevice ? '0.4rem' : '0.75rem'}`}
                                                 onClick={() => {
                                                     setSelectedTask(dayTask)
                                                 }}
                                                 backgroundColor={dayTask.priority ? categoryColors[dayTask.category]?.baseColor : undefined}
                                                 width={'100vw'}
+                                                position={'relative'}
                                                 // onMouseOver={(e) => {
                                                 //     // e.currentTarget.style.outline = 'solid 3px #99f' // TODO think of something better to highlight each item is selectable
                                                 // }}
@@ -903,22 +919,58 @@ export const MVP = () => {
                                                 //     // e.currentTarget.style.outline = 'unset'
                                                 // }}
                                             >
+                                                {isTouchDevice && ( // TODO: fix reorder by dragging on mobile, this is a placeholder
+                                                    <Flex direction={'column'} gap={'0.2rem'} left={'0.2rem'}>
+                                                        {(
+                                                            [
+                                                                {chars: '/\\', direction: 'up'},
+                                                                {chars: '\\/', direction: 'down'},
+                                                            ] as const
+                                                        ).map((i) => {
+                                                            if (
+                                                                (i.direction === 'up' && taskIndex === 0) ||
+                                                                (i.direction === 'down' && taskIndex === dayTasks[currentList].length - 1)
+                                                            ) {
+                                                                return undefined
+                                                            }
+                                                            return (
+                                                                <Text
+                                                                    fontWeight={900}
+                                                                    letterSpacing={'-1px'}
+                                                                    lineHeight={'2.2rem'}
+                                                                    width={'2.2rem'}
+                                                                    border={'none'}
+                                                                    key={i.direction}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        moveTask(dayTask, taskIndex, i.direction)
+                                                                    }}
+                                                                    backgroundColor={'#ddd'}
+                                                                    borderRadius={'0.25rem'}
+                                                                >
+                                                                    {i.chars}
+                                                                </Text>
+                                                            )
+                                                        })}
+                                                    </Flex>
+                                                )}
                                                 <Flex
                                                     direction={'column'}
                                                     justifyContent={'space-between'}
                                                     flex={'1'}
                                                     alignItems={'start'}
                                                     textAlign={'left'}
+                                                    gap={'0.4rem'}
                                                 >
                                                     <Text fontWeight={600}>{dayTask.title}</Text>
                                                     {dayTask.time && <Text>{dayTask.time.replace(':00.000', '')}</Text>}
                                                 </Flex>
                                                 <Text
                                                     backgroundColor={categoryColors[dayTask.category]?.offsetColor}
-                                                    padding={'1rem'}
+                                                    padding={'0.6rem'}
                                                     borderRadius={'0.5rem'}
                                                     fontWeight={600}
-                                                    width={'6rem'}
+                                                    width={'5rem'}
                                                     isTruncated={true}
                                                 >
                                                     {dayTask.category}
@@ -994,7 +1046,7 @@ export const MVP = () => {
                                     ))}
                                 </Flex>
                             )}
-                            <Flex direction={'column'} flex={1} justifyContent={'end'}>
+                            <Flex direction={'column'} flex={1} justifyContent={'end'} width={'100vw'} gap={'0.1rem'} position={'relative'}>
                                 {/* TODO: smaller buttons, across the width, fixed on the screen, etc */}
                                 {!showAdd && currentList !== 'DONE' && (
                                     <Button
@@ -1024,7 +1076,7 @@ export const MVP = () => {
                                         Esvaziar Lixeira
                                     </Button>
                                 )}
-                                <Flex>
+                                <Flex gap={'0.2rem'} padding={'0.1rem'}>
                                     {client.enums.Lists.values().map((list) => {
                                         const selected = currentList === list
                                         const disabled = selected && !(selectedTask || showAdd)
@@ -1041,6 +1093,7 @@ export const MVP = () => {
                                                 disabled={disabled}
                                                 fontWeight={300}
                                                 style={{cursor: disabled ? 'default' : 'pointer'}}
+                                                flex={1}
                                             >
                                                 {ListTitles[list]}
                                             </Button>
@@ -1049,6 +1102,7 @@ export const MVP = () => {
                                 </Flex>
                                 <Button
                                     onClick={() => {
+                                        if (!confirm('Tem certeza que deseja sair da sua conta?')) return // TODO: proper popup and move this btn elsewhere. I'm confirming cuz it's kindda close to the list btns.
                                         setIsAuthenticated(false)
                                         if (signOut) signOut()
                                     }}
@@ -1056,6 +1110,12 @@ export const MVP = () => {
                                     color={'#aaa'}
                                     fontWeight={300}
                                     fontSize={'0.5rem'}
+                                    width={'fit-content'}
+                                    position={'absolute'}
+                                    bottom={'-1.5rem'}
+                                    left={0}
+                                    padding={'0.1rem 0.5rem'}
+                                    style={{userSelect: 'none'}}
                                 >
                                     Sair da conta {user?.signInDetails?.loginId}
                                 </Button>

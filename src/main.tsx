@@ -19,7 +19,7 @@ const Footer = styled.footer`
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <Flex direction={'column'} justifyContent={'space-between'} minHeight={'100vh'}>
+        <Flex direction={'column'} justifyContent={'space-between'} minHeight={'100vh'} gap={0}>
             <App />
             <Footer>
                 <p>© 2024 DayPlan. Todos os direitos reservados.</p>
