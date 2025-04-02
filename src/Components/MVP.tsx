@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useCallback} from 'react'
 import {Authenticator, Button, Text, TextField, Heading, Flex, View, Label, Input, SwitchField, Autocomplete} from '@aws-amplify/ui-react'
 import {Amplify} from 'aws-amplify'
 import '@aws-amplify/ui-react/styles.css'
@@ -7,7 +7,7 @@ import type {DayTaskSchema} from '../../amplify/data/resource'
 import {titleMaxLength, categoryMaxLength, descriptionMaxLength} from '../../shared/constants'
 import outputs from '../../amplify_outputs.json'
 import styled, {css} from 'styled-components'
-import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
+import {type ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
 
 // TODO: move to .env or consts file
 const daysToDeleteCompleted = 20
@@ -122,6 +122,20 @@ export const MVP = () => {
         // currentList
     ])
 
+    type Forbid<T, K extends keyof T> = {[P in keyof T]?: P extends K ? never : T[P]} // TODO: move to a tshelpers file
+    const updateTask = useCallback(
+        // TODO: turn all methods to usecallback. Whatever doesn't need variables from the component outside the fn's scope, move to a separate file instead.
+        async (dayTask: Pick<DayTask, 'id'>, changeset: Forbid<DayTask, 'id' | 'owner' | 'createdAt' | 'updatedAt'>): Promise<void> => {
+            const {data: _newTask, errors} = await client.models.DayTask.update({id: dayTask.id, ...changeset})
+            console.log('UPDATED', _newTask)
+            if (errors) {
+                console.error('Error updating:', errors)
+                alert(`Ocorreu um erro atualizando a sua tarefa: ${errors[0].message}`)
+            }
+        },
+        [],
+    )
+
     useEffect(() => {
         const twentyDaysAgo = new Date()
         twentyDaysAgo.setDate(twentyDaysAgo.getDate() - daysToDeleteCompleted)
@@ -157,7 +171,7 @@ export const MVP = () => {
 
         const colors = generateColors({nOfColors: Math.max(categories.length, minNumberOfColors)})
         setCategoryColors(Object.fromEntries(categories.sort().map((c, i) => [c, colors[i]])))
-    }, [dayTasks])
+    }, [dayTasks, updateTask])
 
     const createTask: React.FormEventHandler<HTMLFormElement> = (event) => {
         event.preventDefault()
@@ -226,19 +240,6 @@ export const MVP = () => {
 
             setSelectedTask(undefined)
         })()
-    }
-
-    type Forbid<T, K extends keyof T> = {[P in keyof T]?: P extends K ? never : T[P]}
-    const updateTask = async (
-        dayTask: Pick<DayTask, 'id'>,
-        changeset: Forbid<DayTask, 'id' | 'owner' | 'createdAt' | 'updatedAt'>,
-    ): Promise<void> => {
-        const {data: _newTask, errors} = await client.models.DayTask.update({id: dayTask.id, ...changeset})
-        console.log('UPDATED', _newTask)
-        if (errors) {
-            console.error('Error updating:', errors)
-            alert(`Ocorreu um erro atualizando a sua tarefa: ${errors[0].message}`)
-        }
     }
 
     const deleteTask = async ({id, title}: DayTask, skipConfirm?: boolean): Promise<void> => {
