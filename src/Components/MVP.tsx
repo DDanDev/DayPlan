@@ -186,7 +186,8 @@ export const MVP = () => {
 
             console.log('CREATED', _newTask)
             if (errors) {
-                console.error('creation', errors)
+                console.error('Error creating:', errors)
+                alert(`Ocorreu um erro criando a sua tarefa: ${errors[0].message}`)
             }
 
             setShowAdd(false)
@@ -234,7 +235,8 @@ export const MVP = () => {
         const {data: _newTask, errors} = await client.models.DayTask.update({id: dayTask.id, ...changeset})
         console.log('UPDATED', _newTask)
         if (errors) {
-            console.error('updating', errors)
+            console.error('Error updating:', errors)
+            alert(`Ocorreu um erro atualizando a sua tarefa: ${errors[0].message}`)
         }
     }
 
