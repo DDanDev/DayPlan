@@ -4,6 +4,7 @@ import {Amplify} from 'aws-amplify'
 import '@aws-amplify/ui-react/styles.css'
 import {generateClient} from 'aws-amplify/data'
 import type {DayTaskSchema} from '../../amplify/data/resource'
+import {titleMaxLength, categoryMaxLength, descriptionMaxLength} from '../../amplify/data/resource'
 import outputs from '../../amplify_outputs.json'
 import styled, {css} from 'styled-components'
 import {ColorDefinition, generateColors} from '../tools/colorPaletteGenerator'
@@ -408,6 +409,7 @@ export const MVP = () => {
                                                 label={'Título'}
                                                 required
                                                 labelHidden
+                                                maxLength={titleMaxLength}
                                             />
                                         </View>
                                         <View position={'relative'}>
@@ -441,6 +443,7 @@ export const MVP = () => {
                                                 labelHidden
                                                 required
                                                 color={'#fff'}
+                                                maxLength={categoryMaxLength}
                                                 onChange={(e) => {
                                                     setSelectedCategoryColor(categoryColors[e.currentTarget.value] ?? undefined)
                                                 }}
@@ -470,6 +473,7 @@ export const MVP = () => {
                                                 placeholder={'Descrição'}
                                                 label={'Descrição'}
                                                 labelHidden
+                                                maxLength={descriptionMaxLength}
                                             />
                                         </View>
                                         <Flex wrap={'wrap'}>
@@ -637,6 +641,7 @@ export const MVP = () => {
                                                 required
                                                 labelHidden
                                                 defaultValue={selectedTask.title}
+                                                maxLength={titleMaxLength}
                                             />
                                         </View>
                                         <View position={'relative'}>
@@ -671,6 +676,7 @@ export const MVP = () => {
                                                 required
                                                 color={'#fff'}
                                                 defaultValue={selectedTask.category}
+                                                maxLength={categoryMaxLength}
                                                 onChange={(e) => {
                                                     setSelectedCategoryColor(categoryColors[e.currentTarget.value] ?? undefined)
                                                 }}
@@ -701,6 +707,7 @@ export const MVP = () => {
                                                 label={'Descrição'}
                                                 labelHidden
                                                 defaultValue={selectedTask.description ?? undefined}
+                                                maxLength={descriptionMaxLength}
                                             />
                                         </View>
                                         <Flex wrap={'wrap'}>

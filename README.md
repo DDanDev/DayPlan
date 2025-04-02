@@ -57,7 +57,6 @@ https://drive.google.com/file/d/1dmN4STTQ-c5m98YIBbw5wlnJWtUlDnc8/view?usp=shari
     - Implement integration to external calendar links, configurable from the user profile page, to automatically import to Today's and tomorrow's list what you have on your other calendars/apps.
     - Implement unit and e2e tests with jest and cypress.
     - Implement SSO (single sign on) using other popular identity providers like Google, Microsoft, Apple, etc.
-    - Improve the form to limit the user's input to the maximum lengths allowed.
     - Implement a proper error popup for error alerts and confirms.
     - Make the color generation stable with the order that each category was created, so that the colors of existing categories do not change when tasks are created or deleted, which results in them being generated in different order.
 
