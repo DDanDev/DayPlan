@@ -5,9 +5,17 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
+import {readFileSync} from 'fs'
 
 export default tseslint.config(
-    {ignores: ['dist']},
+    {
+        ignores: [
+            'dist',
+            ...readFileSync('.gitignore', 'utf8')
+                .split('\n')
+                .filter((line) => line && !line.startsWith('#')),
+        ],
+    },
     {
         extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked],
         files: ['**/*.{ts,tsx}'],
@@ -45,6 +53,7 @@ export default tseslint.config(
                 },
             ],
             eqeqeq: ['error'],
+            '@typescript-eslint/consistent-type-imports': 'error',
         },
     },
 )
