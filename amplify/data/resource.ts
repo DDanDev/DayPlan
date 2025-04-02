@@ -1,8 +1,5 @@
 import {type ClientSchema, a, defineData} from '@aws-amplify/backend'
-
-export const titleMaxLength = 100
-export const categoryMaxLength = 20
-export const descriptionMaxLength = 200
+import {titleMaxLength, categoryMaxLength, descriptionMaxLength} from '../../shared/constants'
 
 const schema = a.schema({
     Recurrence: a.customType({
