@@ -23,7 +23,7 @@ createRoot(document.getElementById('root')!).render(
             <App />
             <Footer>
                 <p>© 2024 DayPlan. Todos os direitos reservados.</p>
-                <p>DayPlan versão alpha 0.0.1 em desenvolvimento</p>
+                <p>DayPlan versão alpha 0.0.3 em desenvolvimento</p>
             </Footer>
         </Flex>
     </StrictMode>,

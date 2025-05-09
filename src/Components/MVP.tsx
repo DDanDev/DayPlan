@@ -149,7 +149,7 @@ export const MVP = () => {
                     .flat()
                     .map((t) => {
                         if (t.list === 'DONE' && t.recurrence.once !== false && t.lastCompleted && t.lastCompleted < ISOTwentyDaysAgo) {
-                            void deleteTask(t)
+                            void deleteTask(t, true)
                         } else {
                             let list: List | undefined = undefined
                             let priority: boolean | undefined = undefined
